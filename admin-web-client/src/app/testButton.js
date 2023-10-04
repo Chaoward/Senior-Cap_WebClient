@@ -1,13 +1,17 @@
 'use client';
 
+import { useState } from "react";
+
 export default function Btn() {
+    const [count, setCount] = useState(0);
+
     const handleClick = () => {
-      alert('You clicked me!');
+      setCount(count + 1);
     }
   
     return (
       <button onClick={handleClick}>
-          Click me
+          Click me {count}
       </button>
     );
 }
