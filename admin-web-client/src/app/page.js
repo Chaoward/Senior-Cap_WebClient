@@ -11,10 +11,6 @@ export default function Home() {
         <link rel="stylesheet" type="text/css" href="../dist/components/grid.css"/>
         <link rel="stylesheet" type="text/css" href="../dist/components/table.css"/>
       </head>
-      <div>
-        <FetchButton>Fetch Pending</FetchButton>
-        <SendVerifiedButton>Confirm and Send</SendVerifiedButton>
-      </div>
       <div className="data-list">
         <ImageList/>
       </div>

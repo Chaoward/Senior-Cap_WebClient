@@ -1,38 +1,49 @@
-const data = [
-    {
-        "imageURL": "https://cdn.britannica.com/16/234216-050-C66F8665/beagle-hound-dog.jpg",
-        "tag": "cat"
-    },
-    {
-        "imageURL": "https://hips.hearstapps.com/hmg-prod/images/dog-puppy-on-garden-royalty-free-image-1586966191.jpg?crop=0.752xw:1.00xh;0.175xw,0&resize=1200:*",
-        "tag": "dog"
-    }
-];
+const cache = [];
 
 
 async function fetchPending(callback) {
     //GET request
-    //parse JSON
-    //save and use
-    callback();
+    await fetch("https://flaskapp.jondooley87.repl.co/getUnverifiedXs", {
+        method: "GET",
+        headers: { 'Access-Corntrol-Allow-Origin': 'http://localhost:3000', "Content-Type": "application/json"}
+        })  
+        .then((res) => res.json()
+        .then((resJson) => {
+            //save to cache
+            resJson.forEach(ele => cache.push(ele) );
+            callback(resJson);
+        }) );
+    console.log(JSON.stringify(cache));
 }
 
+
+
 async function sendVerified(callback) {
-    //demo code
-    callback();
-    for (let i = 0; i < data.length; i++)
-        delete data[i];
+    let alertString = cache.map( (x) => `Image${cache.indexOf(x)+1} : ${x.tag}\n`);
+    let payload = [];
+
+    //load payload and clear cache
+    while (cache.length > 0) {
+        payload.push( cache.pop() );
+    }
 
     //string JSON
-    //POST request send verified data
-    //clear data cache
+    payload = JSON.stringify(payload);
 
-    //callback();
+    //POST request send verified data
+    await fetch("https://flaskapp.jondooley87.repl.co/updateUnverified", {
+        method: "POST",
+        headers: { 'Access-Corntrol-Allow-Origin': 'http://localhost:3000' },
+        body: payload
+    });
+
+    alert(alertString);
+    callback();
 }
 
 
 module.exports = {
-    data,
+    cache,
     fetchPending,
     sendVerified
 }

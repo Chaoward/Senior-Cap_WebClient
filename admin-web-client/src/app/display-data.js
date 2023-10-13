@@ -1,12 +1,13 @@
 'use client';
 
 import { useState } from "react";
-import { data, sendVerified } from "./data";
+import { cache, sendVerified, fetchPending } from "./data";
 import TagSelection from "./tag-button";
 
 var retrieve;
+var next;
 
-export function FetchButton({children}) {
+export function FetchButton({ children }) {
     const handleClick = () => {
         retrieve();
     };
@@ -17,10 +18,9 @@ export function FetchButton({children}) {
 }
 
 
-export function SendVerifiedButton({children}) {
+export function SendVerifiedButton({ children }) {
     const handleClick = () => {
-        sendVerified(() => alert( data.map( (x) => `Image${data.indexOf(x)+1} : ${x.tag}\n` ) ) );
-        retrieve(); //re-render
+        sendVerified( () => next() );
     };
 
     return (
@@ -32,63 +32,71 @@ export function SendVerifiedButton({children}) {
 
 
 export default function ImageList() {
+    const [startIndex, setStartIndex] = useState(0);
     const [imageList, setImageList] = useState([]);
+    const verifiedCount = startIndex - 2;
+    const pendingCount = Math.max(0, cache.length - startIndex);
+    
+
     const _retreive = () => {
         //fetch here
-        const temp = data.map( (x) => x );
-        setImageList(temp);
-    }
+        fetchPending(() => {
+            _next();
+        });
+    };
     retrieve = _retreive;
 
+    const _next = () => {
+        const endIndex = startIndex + 2;
+        const temp = cache.slice(startIndex, endIndex);
+        setImageList(temp);
+        setStartIndex(endIndex);
+    };
+    next = _next;
+
+    return (
+        <div
+            style={{
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+                height: "100vh",
+            }}
+        >
+            <table border={3} bgcolor="9cb6db">
+                <tr>
+                    <th>
+                        <FetchButton>Fetch Data</FetchButton>
+                        <button onClick={_next}>Next</button>
+                        <SendVerifiedButton>
+                            Send Verified
+                        </SendVerifiedButton>
+                    </th>
+                </tr>
+                <tr>
+                    <th bgcolor="47ba5c">Pending: {pendingCount} | Verified: {verifiedCount < 0 ? 0 : verifiedCount}</th>
+                </tr>
+                {imageList.map((entry) => (
+                    <tr key={entry.id}>
+                        <td>
+                            <TagSelection entry={entry} />
+                        </td>
+                    </tr>
+                ))}
+            </table>
+        </div>
+    );
+
+    /*
     return (
         <table border={3} bgcolor="9cb6db">
             <th>Pending: {imageList.length}</th>
             {imageList.map((entry) => <tr>
                 <td>
-                    <TagSelection entry={entry}/>
+                    <TagSelection key={entry.id} entry={entry}/>
                 </td>
             </tr>)}
         </table>
     );
+    */
 }
-
-
-/*
-export function Data() {
-    const [dataList, setDataList] = useState([]);
-
-    const retreiveData = () => {
-        //request and retreive pending verification data
-        setDataList(data.map(x => x));
-    }
-    retrieve = retreiveData;
-
-    const handleClick = (index, tag) => {
-        //update tag and send back to server
-
-        //remove from list
-        delete dataList[index];
-        setDataList(dataList.map((x) => x));
-    }
-
-    return (
-        <tbody>{dataList.map((d, i) =>
-            <tr>
-                <td>
-                    <img src={d.imageURL} width={500} height={500}/>
-                </td>
-                <td>
-                    <h2>
-                        {d.tag}
-                    </h2>
-                </td>
-                <td>
-                    <button onClick={() => handleClick(i, "dog")}>Dog</button><br/>
-                    <button onClick={() => handleClick(i, "cat")}>Cat</button><br/>
-                    <button onClick={() => handleClick(i, "")}>Neither</button>
-                </td>
-            </tr>)}
-        </tbody>
-    );
-}
-*/
