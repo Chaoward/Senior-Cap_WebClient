@@ -6,8 +6,7 @@ import React from 'react';
 import ImageList, { FetchButton, SendVerifiedButton } from "./display-data";
 
 export default function Home() {
-  let testJson = {
-    "items": [
+  let testJson = [
       {
         "id": 4,
         "imageUrl":"https://seniorcapstone.s3.amazonaws.com/cat1.jpg",
@@ -20,8 +19,8 @@ export default function Home() {
         "Label": "dog", 
         "confidence":"90"
       }
-    ]
-  }
+    ];
+  
 
   let testJson2 = [
     {
@@ -44,9 +43,9 @@ export default function Home() {
   const _temp = () => {
     fetch("https://flaskapp.jondooley87.repl.co/updateUnverified", {
       method: "POST",
-      headers: { 'Access-Corntrol-Allow-Origin': 'http://localhost:3000', "Content-Type": "json"},
-      body: testJson3
-    }).then((res) => res.json().then( (resJson) => console.log(resJson) ) );
+      headers: { 'Access-Corntrol-Allow-Origin': 'http://localhost:3000', "Content-Type": "application/json"},
+      body: JSON.stringify(testJson)
+    }).then((res) => res.json().then( (resJson) => console.log(resJson) ).catch( (e) => console.log(e) ) );
   };
 
   return (
