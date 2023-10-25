@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState } from "react";
@@ -17,10 +18,9 @@ export function FetchButton({ children }) {
     );
 }
 
-
 export function SendVerifiedButton({ children }) {
     const handleClick = () => {
-        sendVerified( () => next() );
+        sendVerified(() => next());
     };
 
     return (
@@ -30,47 +30,61 @@ export function SendVerifiedButton({ children }) {
     );
 }
 
-
 export default function ImageList() {
     const [startIndex, setStartIndex] = useState(0);
     const [imageList, setImageList] = useState([]);
-    const verifiedCount = startIndex - 2;
+    const [imagesPerPage, setImagesPerPage] = useState(2);
+    const verifiedCount = Math.max(0, startIndex - imagesPerPage);
     const pendingCount = Math.max(0, cache.length - startIndex);
     
-
-    const _retreive = () => {
-        //fetch here
+    const _retrieve = () => {
         fetchPending(() => {
             _next();
         });
     };
-    retrieve = _retreive;
 
     const _next = () => {
-        const endIndex = startIndex + 2;
+        const endIndex = Math.min(startIndex + imagesPerPage, cache.length); // Ensure endIndex is within the bounds of cache.length
         const temp = cache.slice(startIndex, endIndex);
         setImageList(temp);
-        setStartIndex(endIndex);
+        setStartIndex(endIndex); // Update startIndex to the actual endIndex or cache.length
     };
-    next = _next;
+    
+
+    const _previous = () => {
+        const newStartIndex = Math.max(0, startIndex - imagesPerPage);
+        const endIndex = newStartIndex; // Calculate endIndex based on newStartIndex
+        setStartIndex(newStartIndex); // Update startIndex first
+        const temp = cache.slice(newStartIndex, endIndex);
+        setImageList(temp);
+    };
+    
+
+    const handleImagesPerPageChange = (event) => {
+        const newImagesPerPage = parseInt(event.target.value, 10);
+        setImagesPerPage(newImagesPerPage);
+        setStartIndex(0);
+    };
 
     return (
         <div
-            style={{
-                display: "flex",
-                justifyContent: "center",
-                alignItems: "center",
-                height: "100vh",
+        style={{
+            display: "flex",
+            flexDirection: "column",
+            justifyContent: "center",
+            alignItems: "center",
+            minHeight: "100vh",
+            padding: "20px",
             }}
         >
             <table border={3} bgcolor="9cb6db">
+                <tr bgcolor="fafafa">Display <input type="number" min="1" value={imagesPerPage} onChange={handleImagesPerPageChange} /> images per page</tr>
                 <tr>
                     <th>
-                        <FetchButton>Fetch Data</FetchButton>
-                        <button onClick={_next}>Next</button>
-                        <SendVerifiedButton>
-                            Send Verified
-                        </SendVerifiedButton>
+                        <button onClick={_retrieve}>Fetch Data</button>
+                        <button onClick={_previous} disabled={startIndex === 0} >Back</button>
+                        <button onClick={_next} disabled={startIndex + imagesPerPage >= cache.length}>Next</button>
+                        <SendVerifiedButton>Send Verified</SendVerifiedButton>
                     </th>
                 </tr>
                 <tr>
@@ -86,17 +100,4 @@ export default function ImageList() {
             </table>
         </div>
     );
-
-    /*
-    return (
-        <table border={3} bgcolor="9cb6db">
-            <th>Pending: {imageList.length}</th>
-            {imageList.map((entry) => <tr>
-                <td>
-                    <TagSelection key={entry.id} entry={entry}/>
-                </td>
-            </tr>)}
-        </table>
-    );
-    */
 }

@@ -5,40 +5,51 @@ async function fetchPending(callback) {
     //GET request
     await fetch("https://flaskapp.jondooley87.repl.co/getUnverifiedXs", {
         method: "GET",
-        headers: { 'Access-Corntrol-Allow-Origin': 'http://localhost:3000', "Content-Type": "application/json"}
-        })  
+        headers: { 'Access-Corntrol-Allow-Origin': 'http://localhost:3000', "Content-Type": "application/json" }
+    })
         .then((res) => res.json()
-        .then((resJson) => {
-            //save to cache
-            resJson.forEach(ele => cache.push(ele) );
-            callback(resJson);
-        }) );
+            .then((resJson) => {
+                //save to cache
+                resJson.forEach(ele => cache.push(ele));
+                callback(resJson);
+            }));
     console.log(JSON.stringify(cache));
 }
 
 
 
 async function sendVerified(callback) {
-    let alertString = cache.map( (x) => `Image${cache.indexOf(x)+1} : ${x.tag}\n`);
-    let payload = [];
-
-    //load payload and clear cache
-    while (cache.length > 0) {
-        payload.push( cache.pop() );
-    }
-
-    //string JSON
-    payload = JSON.stringify(payload);
+    //let alertString = cache.map((x) => `Image${cache.indexOf(x) + 1} : ${x.tag}\n`);
+    let response;
 
     //POST request send verified data
-    await fetch("https://flaskapp.jondooley87.repl.co/updateUnverified", {
-        method: "POST",
-        headers: { 'Access-Corntrol-Allow-Origin': 'http://localhost:3000' },
-        body: payload
-    });
+    try {
+        await fetch("https://flaskapp.jondooley87.repl.co/updateUnverified", {
+            method: "POST",
+            headers: { 'Access-Corntrol-Allow-Origin': 'http://localhost:3000', "Content-Type": "application/json" },
+            body: JSON.stringify(cache)
+        })
+        .then((res) => response = res);
 
-    alert(alertString);
-    callback();
+
+        await response.json().then(resJson => {
+            console.log(resJson);
+            if (!resJson.success) {
+                alert("POST request made but response was unsuccessful!");
+                alert(resJson);
+                return;
+            }
+        });
+
+        //clear cache
+        while (cache.length > 0)
+            cache.pop();
+
+        callback();
+    } catch (e) {
+        console.error(e);
+        alert(e);
+    }
 }
 
 
