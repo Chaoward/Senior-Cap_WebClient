@@ -1,26 +1,39 @@
 "use client";
 
 import { cache } from "./data";
+import * as React from "react";
+import MenuItem from "@mui/material/MenuItem";
+import FormControl from "@mui/material/FormControl";
+import Select from "@mui/material/Select";
+import { Grid } from "@mui/material";
 
-export default function TagSelection({entry}) {
-    const handleInput = (e) => {
-        e.preventDefault();
+export default function TagSelection({ entry }) {
+  const handleInput = (e) => {
+    e.preventDefault();
 
-        const index = cache.indexOf(entry);
-        console.log(e.target.value);
-        cache[index].tag = e.target.value;
-    }
+    const index = cache.indexOf(entry);
+    console.log(e.target.value);
+    cache[index].Label = e.target.value;
+  };
 
+  return (
+    <div>
+      <img width={250} height={250} src={entry.imageUrl} />
+      <Grid>
+        <label>Tag: </label>
 
-    return (
-        <div>
-            <img width={250} height={250} src={entry.imageUrl}/>
-            <label>Tag: </label>
-            <select name="new_tag" defaultValue={entry.tag} onInput={handleInput}>
-                <option value="dog" >Dog</option>
-                <option value="cat">Cat</option>
-                <option value="none">Neither</option>
-            </select>
-        </div>
-    );
+        <FormControl variant="standard" sx={{ m: 1, minWidth: 120 }}>
+          <Select
+            name="new_tag"
+            defaultValue={entry.Label}
+            onChange={handleInput}
+          >
+            <MenuItem value="dog">Dog</MenuItem>
+            <MenuItem value="cat">Cat</MenuItem>
+            <MenuItem value="None">Neither</MenuItem>
+          </Select>
+        </FormControl>
+      </Grid>
+    </div>
+  );
 }

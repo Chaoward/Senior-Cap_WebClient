@@ -34,11 +34,13 @@ async function sendVerified(callback) {
 
         await response.json().then(resJson => {
             console.log(resJson);
+            
+            /*
             if (!resJson.success) {
                 alert("POST request made but response was unsuccessful!");
                 alert(resJson);
                 return;
-            }
+            }*/
         });
 
         //clear cache

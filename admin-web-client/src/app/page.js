@@ -1,7 +1,7 @@
 //import Image from 'next/image'
 import "./stylePage.css";
 import React from 'react';
-import ImageList, { FetchButton, SendVerifiedButton } from "./display-data";
+import ImageListData, { FetchButton, SendVerifiedButton } from "./display-data";
 
 export default function Home() {
 
@@ -10,7 +10,7 @@ export default function Home() {
       <head>
       </head>
       <div className="data-list">
-        <ImageList/>
+        <ImageListData/>
       </div>
     </html>
   );
