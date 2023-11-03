@@ -23,8 +23,8 @@ export function FetchButton({ children, callback }) {
   const [open, setOpen] = useState(false);
 
   const handleClick = () => {
-    //if data on cache, prompt user wether to refetch
-    if (cache.length > 0)
+    //if data on cache.unverified, prompt user wether to refetch
+    if (cache.unverified.length > 0)
       setOpen(true);
     else
       handleConfirm();
@@ -119,31 +119,31 @@ export default function ImageListData() {
   const [imagesPerPage, setImagesPerPage] = useState(2);
 
   const verifiedCount = Math.max(0, startIndex - imagesPerPage);
-  const pendingCount = Math.max(0, cache.length - startIndex);
+  const pendingCount = Math.max(0, cache.unverified.length - startIndex);
 
   //callback after fetching
   const _retrieve = () => {
     //after fetch, set start index and display first set of images
     setStartIndex(0);
-    const firstImages = cache.slice(startIndex, imagesPerPage);
+    const firstImages = cache.unverified.slice(startIndex, imagesPerPage);
     setImageListData(firstImages);
   };
 
   const _previous = () => {
     const newStartIndex = Math.max(0, startIndex - imagesPerPage);
-    const endIndex = Math.min(newStartIndex + imagesPerPage, cache.length); // Calculate endIndex based on newStartIndex or total available images
-    const temp = cache.slice(newStartIndex, endIndex);
+    const endIndex = Math.min(newStartIndex + imagesPerPage, cache.unverified.length); // Calculate endIndex based on newStartIndex or total available images
+    const temp = cache.unverified.slice(newStartIndex, endIndex);
     setImageListData(temp);
     setStartIndex(newStartIndex); // Update startIndex
   };
 
   //This one starts with second index but traverse once
   const _next = () => {
-    const newStartIndex = Math.min((startIndex + imagesPerPage), cache.length);
+    const newStartIndex = Math.min((startIndex + imagesPerPage), cache.unverified.length);
     if (newStartIndex !== startIndex) {
-      const endIndex = Math.min(newStartIndex + imagesPerPage, cache.length); // Calculate endIndex based on newStartIndex
+      const endIndex = Math.min(newStartIndex + imagesPerPage, cache.unverified.length); // Calculate endIndex based on newStartIndex
       setStartIndex(newStartIndex); // Update startIndex first
-      const temp = cache.slice(newStartIndex, endIndex);
+      const temp = cache.unverified.slice(newStartIndex, endIndex);
       setImageListData(temp);
     }
   };
@@ -151,10 +151,10 @@ export default function ImageListData() {
   //this one starts with the first index of the images but twice click for traverse
   /*
   const _next2 = () => {
-    const endIndex = Math.min(startIndex + imagesPerPage, cache.length); // Ensure endIndex is within the bounds of cache.length
-    const temp = cache.slice(startIndex, endIndex);
+    const endIndex = Math.min(startIndex + imagesPerPage, cache.unverified.length); // Ensure endIndex is within the bounds of cache.unverified.length
+    const temp = cache.unverified.slice(startIndex, endIndex);
     setImageListData(temp);
-    setStartIndex(endIndex); // Update startIndex to the actual endIndex or cache.length
+    setStartIndex(endIndex); // Update startIndex to the actual endIndex or cache.unverified.length
   };
   */
 
@@ -193,11 +193,11 @@ export default function ImageListData() {
               <Button onClick={_previous} disabled={startIndex === 0}>Back</Button>
               <Button
                 onClick={_next}
-                disabled={startIndex + imagesPerPage >= cache.length}
+                disabled={startIndex + imagesPerPage >= cache.unverified.length}
               >
                 Next
               </Button>
-              <SendVerifiedButton callback={() => setImageListData(cache)}>Send Verified</SendVerifiedButton>
+              <SendVerifiedButton callback={() => setImageListData(cache.unverified)}>Send Verified</SendVerifiedButton>
             </ButtonGroup>
           </Item>
 

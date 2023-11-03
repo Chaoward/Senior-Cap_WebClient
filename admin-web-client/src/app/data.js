@@ -1,5 +1,18 @@
-const cache = [];
+const cache = {
+    "labels": ["dog", "cat"],
+        "unverified": [
+            {
+                "imageUrl": "https://www.cdc.gov/healthypets/images/pets/cute-dog-headshot.jpg?_=42445",
+                "Label": "dog"
+            },
+            {
+                "imageUrl": "https://image.petmd.com/files/styles/978x550/public/dog-allergies.jpg",
+                "Label": "cat"
+            }
+        ]
+};
 
+//TODO: edit fetches to match new data format
 
 async function fetchPending(callback) {
     //GET request

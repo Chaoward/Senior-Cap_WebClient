@@ -1,0 +1,11 @@
+{
+    "getUnverified": {
+        "labels": ["dog", "cat"],
+        "unverified": [
+            {
+                "imageUrl": "",
+                "label": ""
+            }
+        ]
+    }
+}
