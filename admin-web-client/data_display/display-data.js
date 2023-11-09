@@ -1,21 +1,28 @@
 "use client";
 
+import * as React from 'react';
 import { useState, useEffect } from "react";
 import { cache, sendVerified, fetchPending } from "./data";
 import {
-  ImageList, ImageListItem, ImageListItemBar,
-  //   InputLabel,
-  //   MenuItem,
-  //   FormControl,
-  //   Select,
+  ImageList,
+  ImageListItem,
+  ImageListItemBar,
   Button,
   ButtonGroup,
-  Dialog, DialogActions, DialogTitle, DialogContent, DialogContentText
+  Dialog,
+  DialogActions,
+  DialogTitle,
+  DialogContent,
+  DialogContentText,
 } from "@mui/material";
 import TagSelection from "./tag-button";
-import { Box, Container, Stack, Paper, styled, Card } from "@mui/material";
-//var retrieve;
-//var next;
+import { Box, Container, Stack, Paper, styled} from "@mui/material";
+import AppBar from '@mui/material/AppBar';
+import Toolbar from '@mui/material/Toolbar';
+import Typography from '@mui/material/Typography';
+import IconButton from '@mui/material/IconButton';
+// import MenuIcon from '@mui/icons-material/Menu';
+
 
 
 //===== FetchButton =======================================
@@ -23,11 +30,9 @@ export function FetchButton({ children, callback }) {
   const [open, setOpen] = useState(false);
 
   const handleClick = () => {
-    //if data on cache.unverified, prompt user wether to refetch
-    if (cache.unverified.length > 0)
-      setOpen(true);
-    else
-      handleConfirm();
+    //if data on cache, prompt user wether to refetch
+    if (cache.length > 0) setOpen(true);
+    else handleConfirm();
   };
 
   //fetch
@@ -40,7 +45,7 @@ export function FetchButton({ children, callback }) {
 
   return (
     <div>
-      <Button onClick={handleClick}>{children}</Button>
+      <Button color="error" onClick={handleClick}>{children}</Button>
 
       <Dialog
         id="fetch-prompt"
@@ -51,7 +56,9 @@ export function FetchButton({ children, callback }) {
         <DialogTitle>{"Refetch Unverified Data?"}</DialogTitle>
         <DialogContent>
           <DialogContentText>
-            {"Already fetched a batch of unverified data, fetching again will REMOVE any changes to the curent batch.\n\nDo want to proceed?"}
+            {
+              "Already fetched a batch of unverified data, fetching again will REMOVE any changes to the curent batch.\n\nDo want to proceed?"
+            }
           </DialogContentText>
         </DialogContent>
         <DialogActions>
@@ -64,8 +71,6 @@ export function FetchButton({ children, callback }) {
 }
 //===== *END* FetchButton *END* =======================================
 
-
-
 //===== SendVerifiedButton =======================================
 export function SendVerifiedButton({ children, callback }) {
   const [open, setOpen] = useState(false);
@@ -77,7 +82,7 @@ export function SendVerifiedButton({ children, callback }) {
   const handleConfirm = async () => {
     await sendVerified(() => callback());
     setOpen(false);
-  }
+  };
 
   const handleClick = () => {
     setOpen(true);
@@ -98,7 +103,9 @@ export function SendVerifiedButton({ children, callback }) {
         <DialogTitle>{"Send Verified Images?"}</DialogTitle>
         <DialogContent>
           <DialogContentText>
-            {"Confirm that all images are verified and ready for model training?"}
+            {
+              "Confirm that all images are verified and ready for model training?"
+            }
           </DialogContentText>
         </DialogContent>
         <DialogActions>
@@ -111,52 +118,41 @@ export function SendVerifiedButton({ children, callback }) {
 }
 //===== *END* SendVerifiedButton *END* =======================================
 
-
 //===== ImageListData =======================================================
 export default function ImageListData() {
   const [startIndex, setStartIndex] = useState(0);
-  const [imageListData, setImageListData] = useState(cache.unverified);
+  const [imageListData, setImageListData] = useState([]);
   const [imagesPerPage, setImagesPerPage] = useState(2);
 
   const verifiedCount = Math.max(0, startIndex - imagesPerPage);
-  const pendingCount = Math.max(0, cache.unverified.length - startIndex);
+  const pendingCount = Math.max(0, cache.length - startIndex);
 
   //callback after fetching
   const _retrieve = () => {
     //after fetch, set start index and display first set of images
     setStartIndex(0);
-    const firstImages = cache.unverified.slice(startIndex, imagesPerPage);
+    const firstImages = cache.slice(startIndex, imagesPerPage);
     setImageListData(firstImages);
   };
 
   const _previous = () => {
     const newStartIndex = Math.max(0, startIndex - imagesPerPage);
-    const endIndex = Math.min(newStartIndex + imagesPerPage, cache.unverified.length); // Calculate endIndex based on newStartIndex or total available images
-    const temp = cache.unverified.slice(newStartIndex, endIndex);
+    const endIndex = Math.min(newStartIndex + imagesPerPage, cache.length); // Calculate endIndex based on newStartIndex or total available images
+    const temp = cache.slice(newStartIndex, endIndex);
     setImageListData(temp);
     setStartIndex(newStartIndex); // Update startIndex
   };
 
   //This one starts with second index but traverse once
   const _next = () => {
-    const newStartIndex = Math.min((startIndex + imagesPerPage), cache.unverified.length);
+    const newStartIndex = Math.min(startIndex + imagesPerPage, cache.length);
     if (newStartIndex !== startIndex) {
-      const endIndex = Math.min(newStartIndex + imagesPerPage, cache.unverified.length); // Calculate endIndex based on newStartIndex
+      const endIndex = Math.min(newStartIndex + imagesPerPage, cache.length); // Calculate endIndex based on newStartIndex
       setStartIndex(newStartIndex); // Update startIndex first
-      const temp = cache.unverified.slice(newStartIndex, endIndex);
+      const temp = cache.slice(newStartIndex, endIndex);
       setImageListData(temp);
     }
   };
-
-  //this one starts with the first index of the images but twice click for traverse
-  /*
-  const _next2 = () => {
-    const endIndex = Math.min(startIndex + imagesPerPage, cache.unverified.length); // Ensure endIndex is within the bounds of cache.unverified.length
-    const temp = cache.unverified.slice(startIndex, endIndex);
-    setImageListData(temp);
-    setStartIndex(endIndex); // Update startIndex to the actual endIndex or cache.unverified.length
-  };
-  */
 
   const handleImagesPerPageChange = (event) => {
     const newImagesPerPage = parseInt(event.target.value, 10);
@@ -173,9 +169,21 @@ export default function ImageListData() {
 
   return (
     <Container>
+      <Box sx={{ flexGrow: 1, padding: 5}}>
+      <AppBar position="static">
+        <Toolbar>
+          <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
+            Image Traning
+          </Typography>
+        </Toolbar>
+      </AppBar>
+    </Box>
+
+
+
+
       <Box alignContent="center" sx={{ border: "dash" }}>
         <Stack spacing={2} alignItems={"center"}>
-
           <Item>
             Display{" "}
             <input
@@ -188,16 +196,24 @@ export default function ImageListData() {
           </Item>
 
           <Item>
-            <ButtonGroup variant="outlined" aria-label="outlined button group" color="secondary">
+            <ButtonGroup
+              variant="outlined"
+              aria-label="outlined button group"
+              color="secondary"
+            >
               <FetchButton callback={_retrieve}>Fetch Data</FetchButton>
-              <Button onClick={_previous} disabled={startIndex === 0}>Back</Button>
+              <Button onClick={_previous} disabled={startIndex === 0}>
+                Back
+              </Button>
               <Button
                 onClick={_next}
-                disabled={startIndex + imagesPerPage >= cache.unverified.length}
+                disabled={startIndex + imagesPerPage >= cache.length}
               >
                 Next
               </Button>
-              <SendVerifiedButton callback={() => setImageListData(cache.unverified)}>Send Verified</SendVerifiedButton>
+              <SendVerifiedButton callback={() => setImageListData(cache)}>
+                Send Verified
+              </SendVerifiedButton>
             </ButtonGroup>
           </Item>
 

@@ -1,4 +1,14 @@
+import * as server from "./server-endpoints";
+
+const DEFAULT_HEADER = {
+    'Access-Corntrol-Allow-Origin': 'http://localhost:3000',
+    "Content-Type": "application/json"
+};
+
 const cache = {
+    labels: [],
+    unverified: []
+    /*
     "labels": ["dog", "cat"],
         "unverified": [
             {
@@ -9,21 +19,26 @@ const cache = {
                 "imageUrl": "https://image.petmd.com/files/styles/978x550/public/dog-allergies.jpg",
                 "Label": "cat"
             }
-        ]
+        ]*/
 };
 
-//TODO: edit fetches to match new data format
 
 async function fetchPending(callback) {
     //GET request
-    await fetch("https://flaskapp.jondooley87.repl.co/getUnverifiedXs", {
+    await fetch(server.GET_getUnverifiedXs, {
         method: "GET",
-        headers: { 'Access-Corntrol-Allow-Origin': 'http://localhost:3000', "Content-Type": "application/json" }
+        headers: DEFAULT_HEADER
     })
         .then((res) => res.json()
             .then((resJson) => {
                 //save to cache
-                resJson.forEach(ele => cache.push(ele));
+                _addLabels(resJson.labels);
+                console.log( JSON.stringify(resJson) );
+                resJson.images.forEach(item => {
+                    //NOTE: image urls is only the local path without the gateway. Must add begining address to path
+                    item.imageUrl = server.gateway + item.imageUrl.substr(1);
+                    cache.unverified.push(item);
+                });
                 callback(resJson);
             }));
     console.log(JSON.stringify(cache));
@@ -37,9 +52,9 @@ async function sendVerified(callback) {
 
     //POST request send verified data
     try {
-        await fetch("https://flaskapp.jondooley87.repl.co/updateUnverified", {
+        await fetch(server.POST_verify, {
             method: "POST",
-            headers: { 'Access-Corntrol-Allow-Origin': 'http://localhost:3000', "Content-Type": "application/json" },
+            headers: DEFAULT_HEADER,
             body: JSON.stringify(cache)
         })
         .then((res) => response = res);
@@ -57,8 +72,7 @@ async function sendVerified(callback) {
         });
 
         //clear cache
-        while (cache.length > 0)
-            cache.pop();
+        cache.unverified = []
 
         callback();
     } catch (e) {
@@ -68,8 +82,54 @@ async function sendVerified(callback) {
 }
 
 
+/**
+ * @param {String[]} newLabels
+ * @param {*} callback
+ *  
+ */
+async function sendLabels(newLabels, callback) {
+    let respondJson = undefined;
+
+    await fetch(server.POST_addLabel, {
+        method: "POST",
+        headers: DEFAULT_HEADER,
+        body: JSON.stringify(newLabels)
+    }).then(res => res.json().then(resJson => {
+        respondJson = resJson;
+        //refresh label cache with updated one
+        if (resJson.successCount > 0)
+            fetchLabels();
+    }));
+
+    callback(respondJson);
+}
+
+
+async function fetchLabels(callback) {
+    await fetch(server.GET_getLabel, {
+        method: "GET",
+        headers: DEFAULT_HEADER
+    }).then( res => res.json().then(resJson => {
+        //returns a new array of labels
+        cache.labels = resJson;
+        callback(resJson);
+    }));
+}
+
+
+function _addLabels(newList) {
+    for (const l of newList) {
+        //add non dups to cache
+        if ( cache.labels.find( (v) => v == l ) )
+            cache.labels.push(l);
+    }
+}
+
+
 module.exports = {
     cache,
     fetchPending,
-    sendVerified
+    sendVerified,
+    sendLabels,
+    fetchLabels
 }

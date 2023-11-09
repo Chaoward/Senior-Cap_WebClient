@@ -1,6 +1,6 @@
 'use client'
 
-import { cache } from "./data.js";
+import { cache, fetchLabels, sendLabels } from "./data.js";
 import {
     AppBar, Button, Toolbar, ButtonGroup, TextField,
     Dialog, DialogActions, DialogTitle, DialogContent, DialogContentText, IconButton, List, ListItem,
@@ -30,6 +30,7 @@ export default function NavBar() {
 //===== Adding Labels ================
 export function AddLabel() {
     const [open, setOpen] = useState(false);
+    const [openConfirm, SetOpenConfirm] = useState(false);
     const [newLabels, setNewLabels] = useState([]);
     const [fieldLabel, setFieldLabel] = useState("");
     const [invalid, setInvalid] = useState(false);
@@ -56,13 +57,14 @@ export function AddLabel() {
 
     const handleChange = (event) => {
         event.preventDefault();
-        console.log(event.target.value);
+        //console.log(event.target.value);
         setFieldLabel(event.target.value);
     };
 
 
     const handleRemove = (label) => {
-        delete newLabels[ newLabels.indexOf(label) ];
+        newLabels[ newLabels.indexOf(label) ] = newLabels[newLabels.length-1];
+        newLabels.pop();
         setNewLabels([...newLabels]);
     };
 
@@ -74,18 +76,33 @@ export function AddLabel() {
             return setOpen(false);
         }
 
-        // * send new labels to the server *
-        newLabels.forEach((value) => cache.labels.push(value));
+        SetOpenConfirm(true);
+    };
 
-        //temp
-        setNewLabels([]);
-        setOpen(false);
+
+    const handleConfirmSend = (isAdd) => {
+        if (!isAdd) {
+            return SetOpenConfirm(false);
+        }
+
+        // * send new labels to the server *
+        
+        sendLabels(newLabels, (resJson) => {
+            //newLabels.forEach((value) => cache.labels.push(value));
+            setNewLabels([]);
+            setOpen(false);
+            SetOpenConfirm(false);
+
+            //replace alert with notification
+            //alert( cache.labels );
+        });
+        
     };
 
     return (
         <>
             <Button onClick={handleClick}> <BookmarkAdd sx={{ mr: 1 }} /> {"Add Label"}</Button>
-
+            {/*===== Main Adding Labels Screen =====================*/}
             <Dialog open={open} onClose={() => setOpen(false)} fullScreen={false}>
                 <DialogContent>
                     <DialogTitle align="left" sx={{ flexGrow: 3 }} >Add a New Label</DialogTitle>
@@ -106,6 +123,7 @@ export function AddLabel() {
                             label="New Label"
                             onChange={handleChange}
                             helperText={invalid ? "label already exit or queued to get added" : ""}
+                            error={invalid}
                         />
                         <IconButton type="submit"> <Add/> </IconButton>
                     </form>
@@ -114,6 +132,21 @@ export function AddLabel() {
                 <DialogActions>
                     <Button onClick={() => handleConfirmation(true)}>Confirm</Button>
                     <Button onClick={() => handleConfirmation(false)}>Cancel</Button>
+                </DialogActions>
+            </Dialog>
+
+            {/*===== Confirmation Screen =====================*/}
+            <Dialog open={openConfirm} onClose={() => SetOpenConfirm(false)} fullScreen={false}>
+                <DialogTitle>Confirm Adding New Labels?</DialogTitle>
+                <DialogContent>
+                    <DialogContentText> 
+                        {newLabels.map(label => `${label}${newLabels.indexOf(label) == newLabels.length-1 ? "" : ", "}` )} 
+                    </DialogContentText>
+                </DialogContent>
+
+                <DialogActions>
+                    <Button onClick={() => handleConfirmSend(true)}>Confirm & Send</Button>
+                    <Button onClick={() => handleConfirmSend(false)}>Cancel</Button>
                 </DialogActions>
             </Dialog>
         </>
