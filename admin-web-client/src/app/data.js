@@ -32,14 +32,14 @@ async function fetchPending(callback) {
         .then((res) => res.json()
             .then((resJson) => {
                 //save to cache
-                _addLabels(resJson.labels);
+                //cache.labels = resJson.labels;
                 console.log( JSON.stringify(resJson) );
                 resJson.images.forEach(item => {
                     //NOTE: image urls is only the local path without the gateway. Must add begining address to path
                     item.imageUrl = server.gateway + item.imageUrl.substr(1);
                     cache.unverified.push(item);
                 });
-                callback(resJson);
+                fetchLabels(() => {callback(resJson);});    //temp, since labels returned in this json is only the labels used in current image batch
             }));
     console.log(JSON.stringify(cache));
 }
@@ -55,7 +55,7 @@ async function sendVerified(callback) {
         await fetch(server.POST_verify, {
             method: "POST",
             headers: DEFAULT_HEADER,
-            body: JSON.stringify(cache)
+            body: JSON.stringify(cache.unverified)
         })
         .then((res) => response = res);
 
@@ -117,13 +117,6 @@ async function fetchLabels(callback) {
 }
 
 
-function _addLabels(newList) {
-    for (const l of newList) {
-        //add non dups to cache
-        if ( cache.labels.find( (v) => v == l ) )
-            cache.labels.push(l);
-    }
-}
 
 
 module.exports = {

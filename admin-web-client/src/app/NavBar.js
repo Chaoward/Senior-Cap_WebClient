@@ -5,11 +5,27 @@ import {
     AppBar, Button, Toolbar, ButtonGroup, TextField,
     Dialog, DialogActions, DialogTitle, DialogContent, DialogContentText, IconButton, List, ListItem,
 } from "@mui/material";
-import { AddAPhoto, BookmarkAdd, Add, DeleteOutline } from "@mui/icons-material";
+import { AddAPhoto, BookmarkAdd, Add, DeleteOutline, BugReport } from "@mui/icons-material";
 import { useState } from "react";
+import * as data from "./data.js";
 
 
 export default function NavBar() {
+    const handleDebug = () => {
+        
+        data.sendLabels(["t1", "t"], (resJson) => {
+            //alert(resJson);
+            console.log(resJson);
+        });
+    };
+
+    const handleDebug2 = () => {
+        data.fetchLabels((resJson) => {
+            console.log(resJson);
+            console.log( cache.labels.map((tag) => Object({label: tag, value: tag})) );
+        });
+    };
+
     return (
         <AppBar position="static" sx={{
             bgcolor: "info.main",
@@ -17,8 +33,10 @@ export default function NavBar() {
         }}>
             <Toolbar>
                 <ButtonGroup color="inherit" variant="text">
-                    <AddLabel />
+                    <AddLabel/>
                     <Button> <AddAPhoto sx={{ mr: 1 }} /> {"Upload Image"}</Button>
+                    <Button onClick={handleDebug}> <BugReport/> {"Send Test"} </Button>
+                    <Button onClick={handleDebug2}> <BugReport/> {"Fetch Test"} </Button>
                 </ButtonGroup>
             </Toolbar>
         </AppBar>
@@ -31,7 +49,9 @@ export default function NavBar() {
 export function AddLabel() {
     const [open, setOpen] = useState(false);
     const [openConfirm, SetOpenConfirm] = useState(false);
+    const [openDenied, setOpenDenied] = useState(false);
     const [newLabels, setNewLabels] = useState([]);
+    const [denied, setDenied] = useState([]);
     const [fieldLabel, setFieldLabel] = useState("");
     const [invalid, setInvalid] = useState(false);
 
@@ -43,7 +63,7 @@ export function AddLabel() {
         event.preventDefault();
         //check if new label exist
         if (fieldLabel == "") return;
-        if (cache.labels.indexOf(fieldLabel) > 0 || newLabels.indexOf(fieldLabel) > 0) {
+        if (cache.labels.indexOf(fieldLabel) >= 0 || newLabels.indexOf(fieldLabel) >= 0) {
             setInvalid(true);
             return;
         }
@@ -88,7 +108,12 @@ export function AddLabel() {
         // * send new labels to the server *
         
         sendLabels(newLabels, (resJson) => {
-            //newLabels.forEach((value) => cache.labels.push(value));
+            if (resJson.denied.length > 0) {
+                //display denied dialog
+                setDenied( resJson );
+                setOpenDenied(true);
+            }
+
             setNewLabels([]);
             setOpen(false);
             SetOpenConfirm(false);
@@ -109,7 +134,7 @@ export function AddLabel() {
                     <List>
                         { newLabels.map((label) => 
                             <ListItem secondaryAction={
-                                <IconButton onClick={() => handleRemove(label)}> <DeleteOutline/> </IconButton>
+                                <IconButton sx={{fontSize: 16}} onClick={() => handleRemove(label)}> ❌ </IconButton>
                             }>
                                 {label}
                             </ListItem>) 
@@ -147,6 +172,15 @@ export function AddLabel() {
                 <DialogActions>
                     <Button onClick={() => handleConfirmSend(true)}>Confirm & Send</Button>
                     <Button onClick={() => handleConfirmSend(false)}>Cancel</Button>
+                </DialogActions>
+            </Dialog>
+
+            {/*===== Denied List Screen =====================*/}
+            <Dialog>
+                <DialogTitle open={openDenied} onClose={() => setOpenDenied(true)} sx={{color: "red"}}>{denied.length} Labels were Denied</DialogTitle>
+                <DialogContent> {denied.join(", ")} </DialogContent>
+                <DialogActions>
+                    <Button onClick={() => setOpenDenied(false)}>OK</Button>
                 </DialogActions>
             </Dialog>
         </>

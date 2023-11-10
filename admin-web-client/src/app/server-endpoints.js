@@ -7,7 +7,7 @@ module.exports = {
     POST_verify: _default + "verify",
     GET_updateDataset: _default + "updateDataset",
     POST_addLabel: _default + "addLabel",
-    GET_getLabel: _default + "getLabel",
+    GET_getLabel: _default + "getLabels",
     GET_getModelVersion: _default + "getModelVersion",
     GET_getModel: _default + "getModel"
 }

@@ -10,20 +10,28 @@ import Autocomplete from "@mui/material/Autocomplete";
 import TextField from '@mui/material/TextField';
 
 export default function TagSelection({ entry }) {
-  const handleInput = (e) => {
+  const [value, setValue] = React.useState(entry.Label);
+
+  const handleChange = (e, val) => {
     e.preventDefault();
+    if (val === value) return;
 
     const index = cache.unverified.indexOf(entry);
-    console.log(e.target.value);
-    cache.unverified[index].Label = e.target.value;
+    console.log(val);
+    //console.log(e.target.value);
+    cache.unverified[index].Label = val;
+    setValue(val);
+    console.log(cache.unverified);
   };
 
+
+  /*
   const labels_select = [
     { label: 'Dog', value:"dog"},
     { label: 'Cat', value:"cat"},
     { label: 'Horse', value:"horse"},
     { label: 'Neither', value:"either"}
-  ];
+  ];*/
 
   return (
     <div>
@@ -33,9 +41,10 @@ export default function TagSelection({ entry }) {
 
         <FormControl variant="standard" sx={{ m: 1, minWidth: 120 }}>
           <Autocomplete
-            disablePortal
+            value={value}
+            onChange={handleChange}
             id="tag_selection"
-            options={labels_select}
+            options={ cache.labels }
             sx={{ width: 300 }}
             renderInput={(params) => <TextField {...params} label="Label" />}
           />
