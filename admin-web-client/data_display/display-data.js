@@ -1,5 +1,4 @@
 "use client";
-
 import * as React from 'react';
 import { useState, useEffect } from "react";
 import { cache, sendVerified, fetchPending } from "./data";
@@ -16,13 +15,11 @@ import {
   DialogContentText,
 } from "@mui/material";
 import TagSelection from "./tag-button";
-import { Box, Container, Stack, Paper, styled} from "@mui/material";
-import AppBar from '@mui/material/AppBar';
-import Toolbar from '@mui/material/Toolbar';
-import Typography from '@mui/material/Typography';
-import IconButton from '@mui/material/IconButton';
-// import MenuIcon from '@mui/icons-material/Menu';
-
+import { Box, Container, Stack, Paper, styled } from "@mui/material";
+import InputLabel from '@mui/material/InputLabel';
+import MenuItem from '@mui/material/MenuItem';
+import FormControl from '@mui/material/FormControl';
+import Select from '@mui/material/Select';
 
 
 //===== FetchButton =======================================
@@ -30,8 +27,8 @@ export function FetchButton({ children, callback }) {
   const [open, setOpen] = useState(false);
 
   const handleClick = () => {
-    //if data on cache, prompt user wether to refetch
-    if (cache.length > 0) setOpen(true);
+    //if data on cache.unverified, prompt user wether to refetch
+    if (cache.unverified.length > 0) setOpen(true);
     else handleConfirm();
   };
 
@@ -45,7 +42,7 @@ export function FetchButton({ children, callback }) {
 
   return (
     <div>
-      <Button color="error" onClick={handleClick}>{children}</Button>
+      <Button onClick={handleClick}>{children}</Button>
 
       <Dialog
         id="fetch-prompt"
@@ -121,35 +118,44 @@ export function SendVerifiedButton({ children, callback }) {
 //===== ImageListData =======================================================
 export default function ImageListData() {
   const [startIndex, setStartIndex] = useState(0);
-  const [imageListData, setImageListData] = useState([]);
+  const [imageListData, setImageListData] = useState(cache.unverified);
   const [imagesPerPage, setImagesPerPage] = useState(2);
 
   const verifiedCount = Math.max(0, startIndex - imagesPerPage);
-  const pendingCount = Math.max(0, cache.length - startIndex);
+  const pendingCount = Math.max(0, cache.unverified.length - startIndex);
 
   //callback after fetching
   const _retrieve = () => {
     //after fetch, set start index and display first set of images
     setStartIndex(0);
-    const firstImages = cache.slice(startIndex, imagesPerPage);
+    const firstImages = cache.unverified.slice(startIndex, imagesPerPage);
     setImageListData(firstImages);
   };
 
   const _previous = () => {
     const newStartIndex = Math.max(0, startIndex - imagesPerPage);
-    const endIndex = Math.min(newStartIndex + imagesPerPage, cache.length); // Calculate endIndex based on newStartIndex or total available images
-    const temp = cache.slice(newStartIndex, endIndex);
+    const endIndex = Math.min(
+      newStartIndex + imagesPerPage,
+      cache.unverified.length
+    ); // Calculate endIndex based on newStartIndex or total available images
+    const temp = cache.unverified.slice(newStartIndex, endIndex);
     setImageListData(temp);
     setStartIndex(newStartIndex); // Update startIndex
   };
 
   //This one starts with second index but traverse once
   const _next = () => {
-    const newStartIndex = Math.min(startIndex + imagesPerPage, cache.length);
+    const newStartIndex = Math.min(
+      startIndex + imagesPerPage,
+      cache.unverified.length
+    );
     if (newStartIndex !== startIndex) {
-      const endIndex = Math.min(newStartIndex + imagesPerPage, cache.length); // Calculate endIndex based on newStartIndex
+      const endIndex = Math.min(
+        newStartIndex + imagesPerPage,
+        cache.unverified.length
+      ); // Calculate endIndex based on newStartIndex
       setStartIndex(newStartIndex); // Update startIndex first
-      const temp = cache.slice(newStartIndex, endIndex);
+      const temp = cache.unverified.slice(newStartIndex, endIndex);
       setImageListData(temp);
     }
   };
@@ -167,55 +173,65 @@ export default function ImageListData() {
     textAlign: "center",
   }));
 
+  const [age, setAge] = React.useState('');
+
+  const handleChange = (event) => {
+    setAge(event.target.value);
+  };
+
+
   return (
     <Container>
-      <Box sx={{ flexGrow: 1, padding: 5}}>
-      <AppBar position="static">
-        <Toolbar>
-          <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-            Image Traning
-          </Typography>
-        </Toolbar>
-      </AppBar>
-    </Box>
-
-
-
-
       <Box alignContent="center" sx={{ border: "dash" }}>
         <Stack spacing={2} alignItems={"center"}>
-          <Item>
-            Display{" "}
-            <input
-              type="number"
-              min="1"
+          
+          <FormControl color='warning' sx={{ m: 1, minWidth: 180 }} size="small">
+            <InputLabel id="demo-select-small-label">images per page</InputLabel>
+            <Select
               value={imagesPerPage}
+              label="images per page "
               onChange={handleImagesPerPageChange}
-            />{" "}
-            images per page
-          </Item>
-
-          <Item>
-            <ButtonGroup
-              variant="outlined"
-              aria-label="outlined button group"
-              color="secondary"
             >
-              <FetchButton callback={_retrieve}>Fetch Data</FetchButton>
-              <Button onClick={_previous} disabled={startIndex === 0}>
+              <MenuItem value={1}>1</MenuItem>
+              <MenuItem value={2}>2</MenuItem>
+              <MenuItem value={3}>3</MenuItem>
+              <MenuItem value={4}>4</MenuItem>
+              <MenuItem value={5}>5</MenuItem>
+              <MenuItem value={6}>6</MenuItem>
+              <MenuItem value={7}>8</MenuItem>
+              <MenuItem value={8}>8</MenuItem>
+              <MenuItem value={9}>9</MenuItem>
+              <MenuItem value={10}>10</MenuItem>
+
+            </Select>
+          </FormControl>
+
+          <FormControl>
+            <ButtonGroup variant="outlined" aria-label="outlined button group">
+              <FetchButton color="primary" callback={_retrieve}>
+                Fetch Data
+              </FetchButton>
+              <Button
+                color="secondary"
+                onClick={_previous}
+                disabled={startIndex === 0}
+              >
                 Back
               </Button>
               <Button
+                color="secondary"
                 onClick={_next}
-                disabled={startIndex + imagesPerPage >= cache.length}
+                disabled={startIndex + imagesPerPage >= cache.unverified.length}
               >
                 Next
               </Button>
-              <SendVerifiedButton callback={() => setImageListData(cache)}>
+              <SendVerifiedButton
+                callback={() => setImageListData(cache.unverified)}
+              >
                 Send Verified
               </SendVerifiedButton>
             </ButtonGroup>
-          </Item>
+          </FormControl>
 
           <Item>
             Pending: {pendingCount} | Verified:{" "}
@@ -223,7 +239,7 @@ export default function ImageListData() {
           </Item>
         </Stack>
 
-        <Item>
+        <Item sx={{margin: 5}}>
           <ImageList>
             {imageListData.map((entry) => (
               <ImageListItem key={entry.id}>
