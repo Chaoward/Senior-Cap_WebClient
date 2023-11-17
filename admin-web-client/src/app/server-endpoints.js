@@ -9,5 +9,6 @@ module.exports = {
     POST_addLabel: _default + "addLabel",
     GET_getLabel: _default + "getLabels",
     GET_getModelVersion: _default + "getModelVersion",
-    GET_getModel: _default + "getModel"
+    GET_getModel: _default + "getModel",
+    POST_upload: _default + "uploadV2"
 }

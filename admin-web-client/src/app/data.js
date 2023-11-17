@@ -82,6 +82,14 @@ async function sendVerified(callback) {
 }
 
 
+async function updateDataset(callback) {
+    await fetch(server.GET_updateDataset, {
+        method: "GET",
+        headers: DEFAULT_HEADER
+    }).then(res => callback(res));
+}
+
+
 /**
  * @param {String[]} newLabels
  * @param {*} callback
@@ -117,6 +125,33 @@ async function fetchLabels(callback) {
 }
 
 
+async function fetchVersion(callback) {
+    await fetch(server.GET_getModelVersion, {
+        method: "GET",
+        headers: DEFAULT_HEADER
+    }).then( res => callback(res) );
+}
+
+
+async function sendImages(imageList, callback) {
+    await fetch(server.POST_upload, {
+        method: "POST",
+        headers: DEFAULT_HEADER,
+        body: JSON.stringify(imageList)
+    });
+}
+
+
+/* ========= DEBUG ============== */
+async function testSend() {
+    await fetch(server.POST_upload, {
+        method: 'POST',
+        headers: DEFAULT_HEADER,
+        body: "cat123565.png"
+    }).then( res => console.log(res) );
+}
+
+
 
 
 module.exports = {
@@ -124,5 +159,9 @@ module.exports = {
     fetchPending,
     sendVerified,
     sendLabels,
-    fetchLabels
+    fetchLabels,
+    updateDataset,
+    fetchVersion,
+    sendImages,
+    testSend
 }
