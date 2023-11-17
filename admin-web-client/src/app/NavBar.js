@@ -27,19 +27,6 @@ export default function NavBar() {
         });
     };
 
-    const handleDebug2 = () => {
-        data.fetchLabels((resJson) => {
-            console.log(resJson);
-            console.log(cache.labels.map((tag) => Object({ label: tag, value: tag })));
-        });
-    };
-
-    const handleDebug3 = () => {
-        data.testSend();
-    };
-
-    
-
     return (
         <AppBar
             position="static"
@@ -52,9 +39,7 @@ export default function NavBar() {
                 <ButtonGroup color="inherit" variant="text">
                     <AddLabel />
                     <UploadButton/>
-                    <Button onClick={handleDebug}> <BugReport /> {"Send Test"} </Button>
-                    <Button onClick={handleDebug2}> <BugReport /> {"Fetch Test"} </Button>
-                    <Button onClick={handleDebug3}> <BugReport /> {"Upload Test"} </Button>
+                    {/*<Button onClick={handleDebug}> <BugReport /> {"Send Test"} </Button>*/}
                     <Button onClick={handleUpdateTraining}> <Update /> {"Train with Verified"} </Button>
                 </ButtonGroup>
             </Toolbar>
@@ -64,7 +49,6 @@ export default function NavBar() {
 }
 
 
-//===== Debug Upload Image ==============
 
 
 //===== Adding Labels ================

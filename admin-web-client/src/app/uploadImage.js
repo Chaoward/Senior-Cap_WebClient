@@ -2,9 +2,9 @@
 import * as server from './server-endpoints';
 import Chip from "@mui/material/Chip";
 import { AddAPhoto } from "@mui/icons-material";
-import { fetchPending } from "./data.js";
-import {Button} from "@mui/material";
-import { useRef } from 'react';
+import { sendImage, cache } from "./data.js";
+import {Button, Dialog, DialogContent, Autocomplete, DialogActions, Input, TextField} from "@mui/material";
+import { useRef, useState } from 'react';
 
 
 
@@ -12,6 +12,10 @@ import { useRef } from 'react';
 
 export function UploadButton() {
     const fileInputRef = useRef(null);
+    const [imgFile, setImgFile] = useState({});
+    const [label, setLabel] = useState("");
+    const [confidence, setConfidence] = useState(0);
+    const [open, setOpen] = useState(false);
 
     const handleButtonClick = () => {
         // trigger the file input when the button is clicked
@@ -21,30 +25,35 @@ export function UploadButton() {
     const handleFileChange = async (event) => {
         const selectedFile = event.target.files[0];
 
-        if (selectedFile) {
+        console.log(selectedFile);
+        if (!selectedFile) return console.log("No File Selected");
 
-            // Upload the selected file to the server
-            const formData = new FormData();
-            formData.append('image', selectedFile);
+        //display preview
+        setImgFile(selectedFile);
+        setOpen(true);
 
-            try {
-                const response = await fetch(server.POST_uploadImage, {
-                    method: 'POST',
-                    body: formData,
-                });
+        /*
+        sendImage(selectedFile, "cat", "2", (res) => {
+            if (res.ok)
+                console.log("Upload callback Success?");
+        });
+        */
+    };
 
-                if (response.ok) {
-                    // If the upload is successful, fetch the updated list of unverified images
-                    await fetchPending((resJson) => {
-                        console.log('Updated list of unverified images:', resJson);
-                    });
-                } else {
-                    console.error('Image upload failed');
-                }
-            } catch (error) {
-                console.error('Error uploading image:', error);
-            }
-        }
+    const handleSend = () => {
+        sendImage(imgFile, label, confidence, (res) => {
+            if (res.ok)
+                console.log("Upload callback Success?");
+            setOpen(false);
+        });
+    };
+
+
+    const handleChange = (e, val) => {
+        e.preventDefault();
+        if (val === label) return;
+        setLabel(val);
+        console.log(val);
     };
 
     return (
@@ -60,6 +69,30 @@ export function UploadButton() {
                 ref={fileInputRef}
                 onChange={handleFileChange}
             />
+
+            {/* Preview Image and setting Label */}
+            <Dialog
+                open={open}
+                onClose={() => {setOpen(false)}}
+            >
+                <DialogContent>
+                    <img width={250} height={250} src={imgFile.name} />
+                    <br/>
+                    <Autocomplete
+                        value={label}
+                        onChange={handleChange}
+                        id="tag_selection"
+                        options={ cache.labels }
+                        sx={{ width: 300 }}
+                        renderInput={(params) => <TextField {...params} label="Label" />}
+                    />
+                    <br/>
+                    <Input type='number' onChange={(e, val) => setConfidence(val)}/>
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={handleSend}> {"Upload"} </Button>
+                </DialogActions>
+            </Dialog>
         </>
     );
 }
