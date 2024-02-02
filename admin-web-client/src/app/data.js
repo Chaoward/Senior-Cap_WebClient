@@ -25,7 +25,7 @@ const cache = {
 
 async function fetchPending(callback) {
     //GET request
-    await fetch(server.GET_getUnverifiedXs, {
+    await fetch(server.GET_getUnverifiedWeb, {
         method: "GET",
         headers: DEFAULT_HEADER
     })
@@ -53,12 +53,12 @@ async function sendVerified(callback) {
 
     //POST request send verified data
     try {
-        await fetch(server.POST_verify, {
+        await fetch(server.POST_verifyWeb, {
             method: "POST",
             headers: DEFAULT_HEADER,
             body: JSON.stringify(cache.unverified)
         })
-            .then((res) => response = res);
+        .then((res) => response = res);
 
 
         await response.json().then(resJson => {
@@ -100,29 +100,31 @@ async function updateDataset(callback) {
 async function sendLabels(newLabels, callback) {
     let respondJson = undefined;
 
-    await fetch(server.POST_addLabel, {
+    await fetch(server.POST_addLabelWeb, {
         method: "POST",
         headers: DEFAULT_HEADER,
-        body: JSON.stringify(newLabels)
+        body: JSON.stringify({
+            "labels": newLabels
+        })
     }).then(res => res.json().then(resJson => {
         respondJson = resJson;
-        //refresh label cache with updated one
-        if (resJson.successCount > 0)
-            fetchLabels();
     }));
 
-    callback(respondJson);
+    if (respondJson.success)
+        await fetchLabels();
+
+    if (callback) callback(respondJson);
 }
 
 
 async function fetchLabels(callback) {
-    await fetch(server.GET_getLabel, {
+    await fetch(server.GET_getLabelWeb, {
         method: "GET",
         headers: DEFAULT_HEADER
     }).then(res => res.json().then(resJson => {
         //returns a new array of labels
         cache.labels = resJson;
-        callback(resJson);
+        if (callback) callback(resJson);
     }));
 }
 
