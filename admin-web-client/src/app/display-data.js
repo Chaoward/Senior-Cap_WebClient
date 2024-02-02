@@ -1,22 +1,28 @@
 "use client";
-
+import * as React from "react";
 import { useState, useEffect } from "react";
 import { cache, sendVerified, fetchPending } from "./data";
 import {
-  ImageList, ImageListItem, ImageListItemBar,
-  //   InputLabel,
-  //   MenuItem,
-  //   FormControl,
-  //   Select,
+  ImageList,
+  ImageListItem,
+  ImageListItemBar,
   Button,
   ButtonGroup,
-  Dialog, DialogActions, DialogTitle, DialogContent, DialogContentText
+  Dialog,
+  DialogActions,
+  DialogTitle,
+  DialogContent,
+  DialogContentText,
 } from "@mui/material";
 import TagSelection from "./tag-button";
-import { Box, Container, Stack, Paper, styled, Card } from "@mui/material";
-//var retrieve;
-//var next;
-
+import { Box, Container, Stack, Paper, styled } from "@mui/material";
+import InputLabel from "@mui/material/InputLabel";
+import MenuItem from "@mui/material/MenuItem";
+import FormControl from "@mui/material/FormControl";
+import Select from "@mui/material/Select";
+import IconButton from '@mui/material/IconButton';
+import WestIcon from '@mui/icons-material/West';
+import EastIcon from '@mui/icons-material/East';
 
 //===== FetchButton =======================================
 export function FetchButton({ children, callback }) {
@@ -24,10 +30,8 @@ export function FetchButton({ children, callback }) {
 
   const handleClick = () => {
     //if data on cache.unverified, prompt user wether to refetch
-    if (cache.unverified.length > 0)
-      setOpen(true);
-    else
-      handleConfirm();
+    if (cache.unverified.length > 0) setOpen(true);
+    else handleConfirm();
   };
 
   //fetch
@@ -40,7 +44,7 @@ export function FetchButton({ children, callback }) {
 
   return (
     <div>
-      <Button onClick={handleClick}>{children}</Button>
+      <Button color="info" onClick={handleClick}>{children}</Button>
 
       <Dialog
         id="fetch-prompt"
@@ -51,20 +55,20 @@ export function FetchButton({ children, callback }) {
         <DialogTitle>{"Refetch Unverified Data?"}</DialogTitle>
         <DialogContent>
           <DialogContentText>
-            {"Already fetched a batch of unverified data, fetching again will REMOVE any changes to the curent batch.\n\nDo want to proceed?"}
+            {
+              "Already fetched a batch of unverified data, fetching again will REMOVE any changes to the curent batch.\n\nDo want to proceed?"
+            }
           </DialogContentText>
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleConfirm}>Confirm</Button>
-          <Button onClick={handleClose}>Cancel</Button>
+          <Button color="success" onClick={handleConfirm}>Confirm</Button>
+          <Button color="error" onClick={handleClose}>Cancel</Button>
         </DialogActions>
       </Dialog>
     </div>
   );
 }
 //===== *END* FetchButton *END* =======================================
-
-
 
 //===== SendVerifiedButton =======================================
 export function SendVerifiedButton({ children, callback }) {
@@ -77,7 +81,7 @@ export function SendVerifiedButton({ children, callback }) {
   const handleConfirm = async () => {
     await sendVerified(() => callback());
     setOpen(false);
-  }
+  };
 
   const handleClick = () => {
     setOpen(true);
@@ -98,19 +102,20 @@ export function SendVerifiedButton({ children, callback }) {
         <DialogTitle>{"Send Verified Images?"}</DialogTitle>
         <DialogContent>
           <DialogContentText>
-            {"Confirm that all images are verified and ready for model training?"}
+            {
+              "Confirm that all images are verified and ready for model training?"
+            }
           </DialogContentText>
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleConfirm}>Confirm</Button>
-          <Button onClick={handleClose}>Cancel</Button>
+          <Button color="success" onClick={handleConfirm}>Confirm</Button>
+          <Button color="error" onClick={handleClose}>Cancel</Button>
         </DialogActions>
       </Dialog>
     </div>
   );
 }
 //===== *END* SendVerifiedButton *END* =======================================
-
 
 //===== ImageListData =======================================================
 export default function ImageListData() {
@@ -131,7 +136,10 @@ export default function ImageListData() {
 
   const _previous = () => {
     const newStartIndex = Math.max(0, startIndex - imagesPerPage);
-    const endIndex = Math.min(newStartIndex + imagesPerPage, cache.unverified.length); // Calculate endIndex based on newStartIndex or total available images
+    const endIndex = Math.min(
+      newStartIndex + imagesPerPage,
+      cache.unverified.length
+    ); // Calculate endIndex based on newStartIndex or total available images
     const temp = cache.unverified.slice(newStartIndex, endIndex);
     setImageListData(temp);
     setStartIndex(newStartIndex); // Update startIndex
@@ -139,24 +147,20 @@ export default function ImageListData() {
 
   //This one starts with second index but traverse once
   const _next = () => {
-    const newStartIndex = Math.min((startIndex + imagesPerPage), cache.unverified.length);
+    const newStartIndex = Math.min(
+      startIndex + imagesPerPage,
+      cache.unverified.length
+    );
     if (newStartIndex !== startIndex) {
-      const endIndex = Math.min(newStartIndex + imagesPerPage, cache.unverified.length); // Calculate endIndex based on newStartIndex
+      const endIndex = Math.min(
+        newStartIndex + imagesPerPage,
+        cache.unverified.length
+      ); // Calculate endIndex based on newStartIndex
       setStartIndex(newStartIndex); // Update startIndex first
       const temp = cache.unverified.slice(newStartIndex, endIndex);
       setImageListData(temp);
     }
   };
-
-  //this one starts with the first index of the images but twice click for traverse
-  /*
-  const _next2 = () => {
-    const endIndex = Math.min(startIndex + imagesPerPage, cache.unverified.length); // Ensure endIndex is within the bounds of cache.unverified.length
-    const temp = cache.unverified.slice(startIndex, endIndex);
-    setImageListData(temp);
-    setStartIndex(endIndex); // Update startIndex to the actual endIndex or cache.unverified.length
-  };
-  */
 
   const handleImagesPerPageChange = (event) => {
     const newImagesPerPage = parseInt(event.target.value, 10);
@@ -171,35 +175,67 @@ export default function ImageListData() {
     textAlign: "center",
   }));
 
+  const [age, setAge] = React.useState("");
+
+  const handleChange = (event) => {
+    setAge(event.target.value);
+  };
+
   return (
     <Container>
       <Box alignContent="center" sx={{ border: "dash" }}>
         <Stack spacing={2} alignItems={"center"}>
-
-          <Item>
-            Display{" "}
-            <input
-              type="number"
-              min="1"
+          <FormControl
+            sx={{ m: 1, minWidth: 180, color: "#514F59" }}
+            size="small"
+          >
+            <InputLabel sx={{color: "#514F59"}} id="demo-select-small-label">
+              images per page
+            </InputLabel>
+            <Select
+              sx={{color: "#514F59"}}
               value={imagesPerPage}
+              label="images per page "
               onChange={handleImagesPerPageChange}
-            />{" "}
-            images per page
-          </Item>
+            >
+              <MenuItem value={1}>1</MenuItem>
+              <MenuItem value={2}>2</MenuItem>
+              <MenuItem value={3}>3</MenuItem>
+              <MenuItem value={4}>4</MenuItem>
+              <MenuItem value={5}>5</MenuItem>
+              <MenuItem value={6}>6</MenuItem>
+              <MenuItem value={7}>8</MenuItem>
+              <MenuItem value={8}>8</MenuItem>
+              <MenuItem value={9}>9</MenuItem>
+              <MenuItem value={10}>10</MenuItem>
+            </Select>
+          </FormControl>
 
-          <Item>
-            <ButtonGroup variant="outlined" aria-label="outlined button group" color="secondary">
+          <FormControl>
+            <ButtonGroup variant="contained" disableElevation>
               <FetchButton callback={_retrieve}>Fetch Data</FetchButton>
-              <Button onClick={_previous} disabled={startIndex === 0}>Back</Button>
-              <Button
+
+              <IconButton
+                onClick={_previous}
+                disabled={startIndex === 0}
+              >
+                <WestIcon sx={{ color: "#000000" }}/>
+              </IconButton>
+
+              <IconButton
                 onClick={_next}
                 disabled={startIndex + imagesPerPage >= cache.unverified.length}
               >
-                Next
-              </Button>
-              <SendVerifiedButton callback={() => setImageListData(cache.unverified)}>Send Verified</SendVerifiedButton>
+                <EastIcon sx={{ color: "#000000" }}/>
+              </IconButton>
+
+              <SendVerifiedButton
+                callback={() => setImageListData(cache.unverified)}
+              >
+                Send Verified
+              </SendVerifiedButton>
             </ButtonGroup>
-          </Item>
+          </FormControl>
 
           <Item>
             Pending: {pendingCount} | Verified:{" "}
@@ -207,7 +243,7 @@ export default function ImageListData() {
           </Item>
         </Stack>
 
-        <Item>
+        {/* <Item sx={{ margin: 5 }} > */}
           <ImageList>
             {imageListData.map((entry) => (
               <ImageListItem key={entry.id}>
@@ -218,7 +254,7 @@ export default function ImageListData() {
               </ImageListItem>
             ))}
           </ImageList>
-        </Item>
+        {/* </Item> */}
       </Box>
     </Container>
   );
