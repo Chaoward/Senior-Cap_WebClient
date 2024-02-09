@@ -7,7 +7,8 @@ const DEFAULT_HEADER = {
 
 const cache = {
     labels: [],
-    unverified: []
+    unverified: [],
+    versions: {},
     /*
     "labels": ["dog", "cat"],
         "unverified": [
@@ -37,7 +38,7 @@ async function fetchPending(callback) {
                 cache.unverified = [];
                 resJson.images.forEach(item => {
                     //NOTE: image urls is only the local path without the gateway. Must add begining address to path
-                    item.imageUrl = server.gateway + item.imageUrl.substr(1);
+                    item.imageUrl = server.gateway + item.imageUrl;
                     cache.unverified.push(item);
                 });
                 fetchLabels(() => { callback(resJson); });    //temp, since labels returned in this json is only the labels used in current image batch
@@ -130,28 +131,47 @@ async function fetchLabels(callback) {
 
 
 async function fetchVersion(callback) {
-    await fetch(server.GET_getModelVersion, {
+    await fetch(server.GET_versionList, {
         method: "GET",
         headers: DEFAULT_HEADER
-    }).then(res => callback(res));
+    }).then(res => res.json().then(resJson => {
+        cache.versions = resJson;
+        let verNums = Object.keys(cache.versions);
+        callback( verNums.map((ver, index) => ver === "release" ? cache.versions[ver] : ver ));
+    }));
+}
+
+async function setRelease(ver, callback) {
+    await fetch(server.POST_setRelease, {
+        method: "POST",
+        headers: DEFAULT_HEADER,
+        body: {release: ver}
+    });
+
+    await fetchVersion(callback);
 }
 
 
-async function sendImage(image, label, confidence, callback) {
+async function sendImages(imgDataList, callback) {
     try {
-         // Upload the selected file to the server
+        console.log(imgDataList);
+         // convert files to multi-form data
          const formData = new FormData();
-         formData.append('file', image);
-         formData.append('Label', label);
-         formData.append('confidence', confidence);
+         for (let i = 0; i < imgDataList.length; i++) {
+            formData.append(`file${i}`, imgDataList[i].image);
+            formData.append(`Label${i}`, imgDataList[i].label);
+            formData.append(`confidence${i}`, -1);
+         }
 
          //formData.append('id', image.name);
          //formData.append('imageUrl', image.name);
 
-        let response = await fetch("http://54.215.250.216:5000/uploadV2", {
+        // Upload the selected file to the server
+        let response = await fetch(server.POST_uploadImages, {
             method: "POST",
             headers: {
-                'Content-Type': 'multipart/form-data'
+                'Content-Type': 'multipart/form-data',
+                'Access-Corntrol-Allow-Origin': 'http://localhost:3000'
             },
             body: formData
         });
@@ -161,7 +181,7 @@ async function sendImage(image, label, confidence, callback) {
             await fetchPending((resJson) => {
                 console.log('Updated list of unverified images:', resJson);
             });
-            callback(response);
+            if (callback) callback(response);
         } else {
             console.log(response);
             console.error('Image upload failed');
@@ -194,6 +214,7 @@ module.exports = {
     fetchLabels,
     updateDataset,
     fetchVersion,
-    sendImage,
+    setRelease,
+    sendImages,
     testSend
 }

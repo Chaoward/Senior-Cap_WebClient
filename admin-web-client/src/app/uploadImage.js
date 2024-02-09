@@ -22,7 +22,7 @@ export function UploadButton() {
         fileInputRef.current.click();
     };
 
-    const handleFileChange = async (event) => {
+    const handleFileChange = (event) => {
         const selectedFile = event.target.files[0];
 
         console.log(selectedFile);
@@ -41,7 +41,7 @@ export function UploadButton() {
     };
 
     const handleSend = () => {
-        sendImage(imgFile, label, confidence, (res) => {
+        sendImages(imgFile, label, confidence, (res) => {
             if (res.ok)
                 console.log("Upload callback Success?");
             setOpen(false);

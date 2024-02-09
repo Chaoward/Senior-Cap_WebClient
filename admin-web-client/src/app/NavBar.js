@@ -1,6 +1,6 @@
 "use client";
 
-import { cache, fetchLabels, sendLabels } from "./data.js";
+import { cache, fetchLabels, sendLabels, sendImages, fetchVersion, setRelease } from "./data.js";
 import {
   AppBar,
   Button,
@@ -110,9 +110,12 @@ export default function NavBar() {
 
   useEffect(() => {
     // Fetch model versions from the server
-    fetchModelVersions();
+    fetchVersion((list) => {
+        setModelVersions(list);
+    });
   }, []);
 
+  /*
   const fetchModelVersions = async () => {
     try {
       const response = await fetch("/api/model-versions");
@@ -126,24 +129,41 @@ export default function NavBar() {
       console.error("Error fetching model versions:", error);
     }
   };
+  */
 
   const handleReleaseVersionChange = (event) => {
     setReleaseVersion(event.target.value);
   };
 
   const handleSetReleaseVersion = async () => {
-    try {
-      const response = await fetch(`/api/model-versions/${releaseVersion}`, {
-        method: "PUT",
-      });
-      if (response.ok) {
-        console.log("Release version set successfully");
-      } else {
-        console.error("Failed to set release version:", response.statusText);
-      }
-    } catch (error) {
-      console.error("Error setting release version:", error);
+    setRelease(releaseVersion, () => {
+        setModelVersions(cache.versions);
+    });
+  };
+
+
+  const handleUpload = async () => {
+    const imgLabList = [];
+    //combine image and label
+    for (let i = 0; i < imageGallery.length; i++) {
+        try {
+            imgLabList.push({
+                image: imageGallery[i],
+                label: selectedLabels[i]
+            });
+        }
+        catch (e){
+            imgLabList.push({
+                image: imageGallery[i],
+                label: ""
+            });
+        }
     }
+    await sendImages(imgLabList);
+    //clear gallery
+    setImageGallery([]);
+    setSelectedLabels([]);
+    setOpenPreviewDialog(false);
   };
 
   return (
@@ -197,7 +217,7 @@ export default function NavBar() {
               >
                 Add
               </Button>
-              <Button variant="contained" color="secondary">
+              <Button variant="contained" color="secondary" onClick={handleUpload}>
                 Upload
               </Button>
             </Toolbar>
@@ -224,11 +244,9 @@ export default function NavBar() {
                   <InputLabel>Add new label</InputLabel>
                   <Select
                     label="Add new label"
-                    onChange={(e) => addUploadLabel(e.target.value)} // You need to define the function addUploadLabel
+                    onChange={(e) => addUploadLabel(e.target.value, index)} // You need to define the function addUploadLabel
                   >
-                    <MenuItem value="cat">Cat</MenuItem>
-                    <MenuItem value="dog">Dog</MenuItem>
-                    <MenuItem value="horse">Horse</MenuItem>
+                    {cache.labels.map((lab, index) => <MenuItem value={lab}>{lab}</MenuItem> )}
                   </Select>
                 </FormControl>
               </div>
@@ -265,11 +283,11 @@ export default function NavBar() {
               onChange={handleReleaseVersionChange}
               renderValue={(selected) => selected || "Select Release Version"}
             >
-              <MenuItem value="1.1.0">Version 1.1.0</MenuItem>
-              <MenuItem value="1.2.1">Version 1.2.1</MenuItem>
+              {/*<MenuItem value="1.1.0">Version 1.1.0</MenuItem>
+              <MenuItem value="1.2.1">Version 1.2.1</MenuItem>*/}
               {modelVersions.map((version) => (
-                <MenuItem key={version.id} value={version.id}>
-                  {version.name}
+                <MenuItem key={version} value={version}>
+                  {version} {cache.versions["release"] === version ? " (Release)" : ""}
                 </MenuItem>
               ))}
             </Select>

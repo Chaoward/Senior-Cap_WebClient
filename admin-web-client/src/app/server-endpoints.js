@@ -1,6 +1,6 @@
 
-var _default = "http://54.215.250.216:5000/";
-var debug = "http://127.0.0.1:2000/";
+var _default = "http://13.57.32.134:5000/";
+var debug = "http://192.168.1.72:2000/";
 _default = debug;
 
 module.exports = {
@@ -14,6 +14,9 @@ module.exports = {
     GET_getModel: _default + "getModel",
     POST_upload: _default + "uploadV2",
     //web made
+    POST_uploadImages: _default + "uploadImages",
+    POST_setRelease: _default + "setRelease",
+    GET_versionList: _default + "versionHistory",
     GET_getUnverifiedWeb: _default + "web_getUnverfified",
     POST_verifyWeb: _default + "web_verify",
     POST_addLabelWeb: _default + "web_addLabels",
