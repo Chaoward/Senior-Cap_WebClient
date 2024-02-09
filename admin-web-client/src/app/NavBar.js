@@ -136,8 +136,8 @@ export default function NavBar() {
   };
 
   const handleSetReleaseVersion = async () => {
-    setRelease(releaseVersion, () => {
-        setModelVersions(cache.versions);
+    setRelease(releaseVersion, (ver) => {
+        setModelVersions(ver);
     });
   };
 

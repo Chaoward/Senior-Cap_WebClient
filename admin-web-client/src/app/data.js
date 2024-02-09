@@ -145,7 +145,7 @@ async function setRelease(ver, callback) {
     await fetch(server.POST_setRelease, {
         method: "POST",
         headers: DEFAULT_HEADER,
-        body: {release: ver}
+        body: JSON.stringify({release: ver})
     });
 
     await fetchVersion(callback);
