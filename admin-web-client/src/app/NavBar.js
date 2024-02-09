@@ -16,6 +16,10 @@ import {
   List,
   ListItem,
   Typography,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
 } from "@mui/material";
 import {
   AddAPhoto,
@@ -23,11 +27,10 @@ import {
   Add,
   DeleteOutline,
 } from "@mui/icons-material";
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import Chip from "@mui/material/Chip";
 import * as server from "./server-endpoints";
-import { fetchPending } from "./data"; 
-
+import { fetchPending } from "./data";
 
 export default function NavBar() {
   const fileInputRef = useRef(null);
@@ -35,6 +38,9 @@ export default function NavBar() {
   const [imagePreview, setImagePreview] = useState(null);
   const [openPreviewDialog, setOpenPreviewDialog] = useState(false);
   const [imageGallery, setImageGallery] = useState([]);
+  const [selectedLabels, setSelectedLabels] = useState([]);
+  const [modelVersions, setModelVersions] = useState([]);
+  const [releaseVersion, setReleaseVersion] = useState("");
 
   const handleButtonClick = () => {
     fileInputRef.current.click();
@@ -95,6 +101,51 @@ export default function NavBar() {
     setImagePreview(null);
   };
 
+  const addUploadLabel = (value, index) => {
+    // Update the selected labels for the corresponding image
+    const updatedLabels = [...selectedLabels];
+    updatedLabels[index] = value;
+    setSelectedLabels(updatedLabels);
+  };
+
+  useEffect(() => {
+    // Fetch model versions from the server
+    fetchModelVersions();
+  }, []);
+
+  const fetchModelVersions = async () => {
+    try {
+      const response = await fetch("/api/model-versions");
+      if (response.ok) {
+        const data = await response.json();
+        setModelVersions(data);
+      } else {
+        console.error("Failed to fetch model versions:", response.statusText);
+      }
+    } catch (error) {
+      console.error("Error fetching model versions:", error);
+    }
+  };
+
+  const handleReleaseVersionChange = (event) => {
+    setReleaseVersion(event.target.value);
+  };
+
+  const handleSetReleaseVersion = async () => {
+    try {
+      const response = await fetch(`/api/model-versions/${releaseVersion}`, {
+        method: "PUT",
+      });
+      if (response.ok) {
+        console.log("Release version set successfully");
+      } else {
+        console.error("Failed to set release version:", response.statusText);
+      }
+    } catch (error) {
+      console.error("Error setting release version:", error);
+    }
+  };
+
   return (
     <AppBar
       position="static"
@@ -103,12 +154,12 @@ export default function NavBar() {
         mt: -1,
       }}
     >
-      <Toolbar sx={{ justifyContent: "space-between" }}>
+      <Toolbar>
         <ButtonGroup color="inherit" variant="text">
           <AddLabel setImagePreview={setImagePreview} />
           <Button color="secondary" onClick={handleButtonClick}>
             {" "}
-            <AddAPhoto sx={{ mr: 1, color: '#1d1128'}} /> {"Upload Image"}
+            <AddAPhoto sx={{ mr: 1, color: "#1d1128" }} /> {"Upload Image"}
           </Button>
           <input
             type="file"
@@ -120,34 +171,69 @@ export default function NavBar() {
           />
         </ButtonGroup>
 
-        <Chip label="Model Version: 1.0" color="primary" />
-
         {/* Preview Dialog */}
         <Dialog
           open={openPreviewDialog}
           onClose={handleClosePreviewDialog}
           maxWidth="md"
         >
-          <DialogContent sx={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '20px' }}>
-              <Toolbar sx={{ gridColumn: 'span 4', justifyContent: 'space-between' }}>
+          <DialogContent
+            sx={{
+              display: "grid",
+              gridTemplateColumns: "repeat(4, 1fr)",
+              gap: "20px",
+            }}
+          >
+            <Toolbar
+              sx={{ gridColumn: "span 4", justifyContent: "space-between" }}
+            >
               <Typography variant="h6" gutterBottom>
                 Upload Image
               </Typography>
-                <Button variant="contained" color="inherit" onClick={handleAddButtonClick}>
-                  Add
-                </Button>
-                <Button variant="contained" color="secondary" >
-                  Upload
-                </Button>
-              </Toolbar>
+              <Button
+                variant="contained"
+                color="inherit"
+                onClick={handleAddButtonClick}
+              >
+                Add
+              </Button>
+              <Button variant="contained" color="secondary">
+                Upload
+              </Button>
+            </Toolbar>
             {imageGallery.map((image, index) => (
-              <img
+              <div
                 key={index}
-                src={image}
-                alt={`Image Preview ${index + 1}`}
-                style={{ display: 'block', width: '100%', height: '100%', marginBottom: '8px' }}
-              />
+                style={{ display: "flex", flexDirection: "column" }}
+              >
+                <img
+                  src={image}
+                  alt={`Image Preview ${index + 1}`}
+                  style={{
+                    display: "block",
+                    width: "100%",
+                    height: "auto",
+                    marginBottom: "8px",
+                  }}
+                />
+                <FormControl
+                  fullWidth
+                  variant="outlined"
+                  style={{ marginBottom: "8px" }}
+                >
+                  <InputLabel>Add new label</InputLabel>
+                  <Select
+                    label="Add new label"
+                    onChange={(e) => addUploadLabel(e.target.value)} // You need to define the function addUploadLabel
+                  >
+                    <MenuItem value="cat">Cat</MenuItem>
+                    <MenuItem value="dog">Dog</MenuItem>
+                    <MenuItem value="horse">Horse</MenuItem>
+                  </Select>
+                </FormControl>
+              </div>
             ))}
+
             {/* file input for adding more images */}
             <input
               type="file"
@@ -159,20 +245,56 @@ export default function NavBar() {
             />
           </DialogContent>
         </Dialog>
+
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            flexGrow: 1,
+            justifyContent: "flex-end",
+          }}
+        >
+          {/* Menu to select release version */}
+          <FormControl sx={{ width: "160px" }}>
+            <InputLabel id="release-version-label" sx={{ width: "auto" }}>
+              Release Version
+            </InputLabel>
+            <Select
+              labelId="release-version-label"
+              value={releaseVersion}
+              onChange={handleReleaseVersionChange}
+              renderValue={(selected) => selected || "Select Release Version"}
+            >
+              <MenuItem value="1.1.0">Version 1.1.0</MenuItem>
+              <MenuItem value="1.2.1">Version 1.2.1</MenuItem>
+              {modelVersions.map((version) => (
+                <MenuItem key={version.id} value={version.id}>
+                  {version.name}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+
+          {/* Button to set release version */}
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={handleSetReleaseVersion}
+            sx={{ ml: 1 }}
+          >
+            Set Release Version
+          </Button>
+        </div>
       </Toolbar>
     </AppBar>
   );
 }
 
-
-
 //===== Adding Labels ================
 export function AddLabel() {
   const [open, setOpen] = useState(false);
   const [openConfirm, SetOpenConfirm] = useState(false);
-  const [openDenied, setOpenDenied] = useState(false);
   const [newLabels, setNewLabels] = useState([]);
-  const [denied, setDenied] = useState([]);
   const [fieldLabel, setFieldLabel] = useState("");
   const [invalid, setInvalid] = useState(false);
 
@@ -185,8 +307,8 @@ export function AddLabel() {
     //check if new label exist
     if (fieldLabel == "") return;
     if (
-      cache.labels.indexOf(fieldLabel) >= 0 ||
-      newLabels.indexOf(fieldLabel) >= 0
+      cache.labels.indexOf(fieldLabel) > 0 ||
+      newLabels.indexOf(fieldLabel) > 0
     ) {
       setInvalid(true);
       return;
@@ -229,12 +351,7 @@ export function AddLabel() {
     // * send new labels to the server *
 
     sendLabels(newLabels, (resJson) => {
-      if (resJson.denied.length > 0) {
-                //display denied dialog
-                setDenied(resJson);
-                setOpenDenied(true);
-            }
-
+      //newLabels.forEach((value) => cache.labels.push(value));
       setNewLabels([]);
       setOpen(false);
       SetOpenConfirm(false);
@@ -329,15 +446,6 @@ export function AddLabel() {
           <Button onClick={() => handleConfirmSend(false)}>Cancel</Button>
         </DialogActions>
       </Dialog>
-
-            {/*===== Denied List Screen =====================*/}
-            <Dialog>
-                <DialogTitle open={openDenied} onClose={() => setOpenDenied(true)} sx={{ color: "red" }}>{denied.length} Labels were Denied</DialogTitle>
-                <DialogContent> {denied.join(", ")} </DialogContent>
-                <DialogActions>
-                    <Button onClick={() => setOpenDenied(false)}>OK</Button>
-                </DialogActions>
-            </Dialog>
     </>
   );
 }
