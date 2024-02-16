@@ -6,6 +6,7 @@ import {
   Button,
   Toolbar,
   ButtonGroup,
+  Typography,
   TextField,
   Dialog,
   DialogActions,
@@ -72,6 +73,14 @@ export function VerifyNavBar({onToggle}) {
 
 
 export function VersionNavBar({onToggle}) {
+  const handleDeleteSelected = () => {
+    // Filter out the selected rows
+    const updatedRows = rows.filter(row => !selectedRows.includes(row.version));
+    // Update the rows state
+    setRows(updatedRows);
+    // Clear the selected rows
+    setSelectedRows([]);
+  };
 
   return (
     <AppBar
@@ -82,8 +91,23 @@ export function VersionNavBar({onToggle}) {
       }}
     >
       <Toolbar>
-        <ButtonGroup color="inherit" variant="text">
-          <Button>Filter</Button>
+      <Typography
+          variant="h6"
+          component="div"
+          sx={{ flexGrow: 1, color: "black" }}
+        >
+          {" "}
+          Release: 1.0.0
+        </Typography>
+
+        <ButtonGroup color="inherit" variant="text" justifyContent="flex-end">
+          <Button variant="contained" color="primary">
+            Set Release
+          </Button>
+
+          {/* <Button variant="contained" color="secondary" onClick={handleDeleteSelected}>
+            Delete Selected
+          </Button> */}
         </ButtonGroup>
 
         <div

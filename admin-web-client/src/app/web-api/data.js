@@ -158,10 +158,10 @@ async function sendImages(imgDataList, callback) {
          // convert files to multi-form data
          const formData = new FormData();
          for (let i = 0; i < imgDataList.length; i++) {
-            formData.append(`file${i}`, imgDataList[i].image);
-            formData.append(`Label${i}`, imgDataList[i].label);
-            formData.append(`confidence${i}`, -1);
-         }
+            formData.append(`files[]`, imgDataList[i].image);
+            formData.append(`Labels[]`, imgDataList[i].label);
+        }
+        formData.append('confidence', -1);
 
          //formData.append('id', image.name);
          //formData.append('imageUrl', image.name);
@@ -169,10 +169,7 @@ async function sendImages(imgDataList, callback) {
         // Upload the selected file to the server
         let response = await fetch(server.POST_uploadImages, {
             method: "POST",
-            headers: {
-                'Content-Type': 'multipart/form-data',
-                'Access-Corntrol-Allow-Origin': 'http://localhost:3000'
-            },
+            headers: DEFAULT_HEADER,
             body: formData
         });
 

@@ -12,7 +12,7 @@ import {
 import {
     AddAPhoto,
 } from "@mui/icons-material";
-import {cache} from "../web-api/data";
+import {cache, sendImages} from "../web-api/data";
 import { useState, useRef } from "react";
 
 
