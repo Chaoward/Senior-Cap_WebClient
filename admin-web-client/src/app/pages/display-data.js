@@ -1,7 +1,7 @@
 "use client";
 import * as React from "react";
 import { useState, useEffect } from "react";
-import { cache, sendVerified, fetchPending } from "./data";
+import { cache, sendVerified, fetchPending } from "../web-api/data";
 import {
   ImageList,
   ImageListItem,
@@ -14,7 +14,7 @@ import {
   DialogContent,
   DialogContentText,
 } from "@mui/material";
-import TagSelection from "./tag-button";
+import TagSelection from "../tag-button";
 import { Box, Container, Stack, Paper, styled } from "@mui/material";
 import InputLabel from "@mui/material/InputLabel";
 import MenuItem from "@mui/material/MenuItem";

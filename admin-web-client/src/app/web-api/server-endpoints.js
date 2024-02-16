@@ -1,6 +1,6 @@
 
 var _default = "http://13.57.32.134:5000/";
-var debug = "http://127.0.0.1:2000/";
+var debug = "http://192.168.1.72:2000/"; //"http://127.0.0.1:2000/";
 _default = debug;
 
 module.exports = {

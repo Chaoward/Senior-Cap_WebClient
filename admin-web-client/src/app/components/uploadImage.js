@@ -1,8 +1,8 @@
 'use client'
-import * as server from './server-endpoints';
+import * as server from '../web-api/server-endpoints';
 import Chip from "@mui/material/Chip";
 import { AddAPhoto } from "@mui/icons-material";
-import { sendImage, cache } from "./data.js";
+import { sendImage, cache } from "../web-api/data.js";
 import {Button, Dialog, DialogContent, Autocomplete, DialogActions, Input, TextField} from "@mui/material";
 import { useRef, useState } from 'react';
 

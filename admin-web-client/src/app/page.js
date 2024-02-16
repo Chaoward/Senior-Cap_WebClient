@@ -1,8 +1,9 @@
 "use client";
 import "./stylePage.css";
 import React, { useState, useRef  } from "react";
-import ImageListData, { FetchButton, SendVerifiedButton } from "./display-data";
-import NavBar from "./NavBar";
+import ImageListData from "./pages/display-data";
+import VersionHistory from "./pages/verison-control";
+import * as NavBar from "./components/NavBar";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
 import { deepOrange, green, pink, purple } from "@mui/material/colors";
 
@@ -36,53 +37,18 @@ const theme = createTheme({
 });
 
 export default function Home() {
-  const [modalOpen, setModalOpen] = useState(false);
-  const [imagePreview, setImagePreview] = useState(null);
-  const imagePreviewRef = useRef(null);
+  const [isVersionPage, setPage] = useState(false);
 
-  const openModal = () => {
-    setModalOpen(true);
-  };
-
-  const closeModal = () => {
-    setModalOpen(false);
-  };
-
-  const handleFileChange = async (event) => {
-    const selectedFile = event.target.files[0];
-
-    if (selectedFile) {
-      const reader = new FileReader();
-
-      reader.onload = (e) => {
-        setImagePreview(e.target.result);
-        openModal();
-      };
-
-      reader.readAsDataURL(selectedFile);
-    }
+  const handleToggle = () => {
+    setPage(!isVersionPage);
   };
 
   return (
     <ThemeProvider theme={theme}>
       <div className="data-list">
-        <NavBar />
+        {isVersionPage ? NavBar.VersionNavBar({onToggle: handleToggle}) : NavBar.VerifyNavBar({onToggle: handleToggle})}
         <br />
-        <ImageListData openModal={openModal} />
-
-        {modalOpen && (
-          <div className="modal" onClick={closeModal}>
-            <span className="close">&times;</span>
-            {imagePreview && (
-              <img
-                ref={imagePreviewRef}
-                src={imagePreview}
-                alt="Image Preview"
-                style={{ maxWidth: "100%", maxHeight: "100%" }}
-              />
-            )}
-          </div>
-        )}
+        {isVersionPage ? <VersionHistory/> : <ImageListData/>}
       </div>
     </ThemeProvider>
   );
