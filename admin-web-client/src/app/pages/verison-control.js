@@ -1,4 +1,6 @@
 import React, { useState } from "react";
+import {cache, fetchVersion, setRelease} from "../web-api/data";
+import "../components/ConfirmDialogAction";
 import {
   AppBar,
   Typography,
@@ -14,20 +16,23 @@ import {
   FormControl,
   Select,
   MenuItem,
-  Button
+  Button,
+  Dialog,
+  DialogTitle,
+  DialogContent
 } from "@mui/material";
+import ConfirmButtonsDialog from "../components/ConfirmDialogAction";
 
 export default function VersionHistory() {
-  const [selectedRows, setSelectedRows] = useState([]);
-  const [rows, setRows] = useState([
-    { version: '1.0.0', date: '2024-02-15', images: 10, size: '25MB' },
-    { version: '1.0.1', date: '2024-02-11', images: 14, size: '32MB' },
-    { version: '1.0.2', date: '2024-02-02', images: 29, size: '75MB' },
-    // Add more rows as needed
-  ]);
+  const [releaseDialog, setReleaseDialog] = useState(false);
+  const [deleteDialog, setDeleteDialog] = useState(false);
+
+  const [selectedVer, setSelectedRows] = useState([]);
+  const [rows, setRows] = useState([...cache.versions]);
   const [sortOrder, setSortOrder] = useState('newToOld');
 
   const handleCheckboxChange = (version) => {
+    /*
     const selectedIndex = selectedRows.indexOf(version);
     let newSelected = [];
 
@@ -42,25 +47,52 @@ export default function VersionHistory() {
         selectedRows.slice(0, selectedIndex),
         selectedRows.slice(selectedIndex + 1)
       );
-    }
+    }*/
+    let i = selectedVer.indexOf(version);
+    if (i >= 0)
+      selectedVer.splice(i, 1);
+    else
+      selectedVer.push(version);
 
-    setSelectedRows(newSelected);
+    setSelectedRows([...selectedVer]);
   };
 
   const handleDeleteSelected = () => {
     // Filter out the selected rows
-    const updatedRows = rows.filter(row => !selectedRows.includes(row.version));
+    const updatedRows = rows.filter(row => !selectedVer.includes(row.version));
     // Update the rows state
     setRows(updatedRows);
     // Clear the selected rows
     setSelectedRows([]);
   };
 
+
+  const handleRelease = () => {
+    if (selectedVer.length < 1) return;
+    setReleaseDialog(true);
+  };
+
+
+  const handleConfirm = () => {
+    console.log(selectedVer[0]);
+    setRelease(selectedVer[0]);
+  };
+
+
   const handleSortOrderChange = (event) => {
     setSortOrder(event.target.value);
   };
 
-  const sortedRows = sortOrder === 'newToOld' ? rows.slice().reverse() : rows;
+
+  const handleFetch = () => {
+    fetchVersion((resJson) => {
+      setRows([...resJson.versions]);
+    });
+  };
+
+  //const sortedRows = sortOrder === 'newToOld' ? rows.slice().reverse() : rows;
+
+
 
   return (
     <>
@@ -75,6 +107,13 @@ export default function VersionHistory() {
           </Select>
         </FormControl>
         <ButtonGroup>
+          <Button variant="contained" color="secondary" onClick={handleFetch}>
+            Fetch Versions
+          </Button>
+          <Button variant="contained" color="secondary" onClick={handleRelease}>
+            Set Release
+          </Button>
+          <div/>
           <Button variant="contained" color="secondary" onClick={handleDeleteSelected}>
             Delete Selected
           </Button>
@@ -87,28 +126,56 @@ export default function VersionHistory() {
               <TableCell>Version</TableCell>
               <TableCell>Date</TableCell>
               <TableCell>Images</TableCell>
+              <TableCell>New Labels</TableCell>
               <TableCell>Size</TableCell>
               <TableCell>Select</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
-            {sortedRows.map((row) => (
-              <TableRow key={row.version}>
-                <TableCell>{row.version}</TableCell>
-                <TableCell>{row.date}</TableCell>
-                <TableCell>{row.images}</TableCell>
-                <TableCell>{row.size}</TableCell>
-                <TableCell>
-                  <Checkbox
-                    onChange={() => handleCheckboxChange(row.version)}
-                    checked={selectedRows.indexOf(row.version) !== -1}
-                  />
-                </TableCell>
-              </TableRow>
-            ))}
+            {rows.map((row) => VersionEntry(row)) }
           </TableBody>
         </Table>
       </TableContainer>
     </>
   );
+
+
+
+  function VersionEntry(entry) {
+    const handleImagePreview = ()=> {
+  
+    };
+  
+    const handleLabelPreview = ()=> {
+      
+    };
+
+    //console.log(entry);
+  
+    return <>
+    <TableRow key={entry.version}>
+      <TableCell>{entry.version}</TableCell>
+      <TableCell>{new Date(entry.dateTrained).toISOString().split("T")[0]}</TableCell>
+      <TableCell>{entry.imagesTrained ? entry.imagesTrained.length : 0}</TableCell>
+      <TableCell>{entry.newLabels ? entry.newLabels.length : 0}</TableCell>
+      <TableCell>{entry.size}</TableCell>
+      <TableCell>
+        <Checkbox
+          onChange={() => handleCheckboxChange(entry.version)}
+          checked={selectedVer.indexOf(entry.version) !== -1}
+        />
+      </TableCell>
+    </TableRow>
+
+    {/* Set Release Dialog */}
+    <Dialog open={releaseDialog} onClose={() => setReleaseDialog(true)} fullScreen={false}>
+      <DialogContent>
+        <DialogTitle>
+          Set the Release Version to {selectedVer[0]}?
+        </DialogTitle>
+        {ConfirmButtonsDialog(handleConfirm, () => {setReleaseDialog(false)})}
+      </DialogContent>
+    </Dialog>
+    </>;
+  }
 }

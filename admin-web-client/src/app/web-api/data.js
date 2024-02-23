@@ -8,7 +8,8 @@ const DEFAULT_HEADER = {
 const cache = {
     labels: [],
     unverified: [],
-    versions: {},
+    versions: [],
+    release: {}
     /*
     "labels": ["dog", "cat"],
         "unverified": [
@@ -135,9 +136,12 @@ async function fetchVersion(callback) {
         method: "GET",
         headers: DEFAULT_HEADER
     }).then(res => res.json().then(resJson => {
-        cache.versions = resJson;
-        let verNums = Object.keys(cache.versions);
-        callback( verNums.map((ver, index) => ver === "release" ? cache.versions[ver] : ver ));
+        console.log(resJson);
+        cache.versions = resJson.versions;
+        cache.release = resJson.release;
+        console.log(cache.versions);
+        console.log(cache.release);
+        if (callback) callback(resJson);
     }));
 }
 
@@ -145,10 +149,15 @@ async function setRelease(ver, callback) {
     await fetch(server.POST_setRelease, {
         method: "POST",
         headers: DEFAULT_HEADER,
-        body: JSON.stringify({release: ver})
-    });
+        body: JSON.stringify({"release": ver})
+    }).then(res => res.json().then( resJson => console.log(resJson) ));
 
     await fetchVersion(callback);
+}
+
+
+async function removeVersion() {
+    
 }
 
 

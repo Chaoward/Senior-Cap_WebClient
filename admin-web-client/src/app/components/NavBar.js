@@ -97,9 +97,10 @@ export function VersionNavBar({onToggle}) {
           sx={{ flexGrow: 1, color: "black" }}
         >
           {" "}
-          Release: 1.0.0
+          Release: {cache.release ? cache.release.version : "???"}
         </Typography>
 
+        {/*
         <ButtonGroup color="inherit" variant="text" justifyContent="flex-end">
           <Button variant="contained" color="primary">
             Set Release
@@ -107,8 +108,9 @@ export function VersionNavBar({onToggle}) {
 
           {/* <Button variant="contained" color="secondary" onClick={handleDeleteSelected}>
             Delete Selected
-          </Button> */}
+          </Button> }
         </ButtonGroup>
+        */}
 
         <div
           style={{
