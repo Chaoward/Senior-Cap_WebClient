@@ -1,20 +1,17 @@
 "use client";
-
-import {
-  AppBar,
-  Button,
-  Toolbar,
-  ButtonGroup,
-
-} from "@mui/material";
+import React, { useState } from "react";
+import { AppBar, Button, Toolbar, ButtonGroup } from "@mui/material";
 
 import UploadPreview from "./uploadImagePreview.js";
 import AddLabel from "../components/AddLabelsBtn.js";
 
+export function VerifyNavBar({ onViewVersionControl, onToggle }) {
+  const [isToggled, setIsToggled] = useState(false);
 
-
-export function VerifyNavBar({onViewVersionControl}) {
-
+  const handleClick = () => {
+    setIsToggled(!isToggled); // Toggle the state
+    onToggle(!isToggled); // Call the onToggle function with the updated state
+  };
   return (
     <AppBar
       position="static"
@@ -29,9 +26,21 @@ export function VerifyNavBar({onViewVersionControl}) {
           <UploadPreview />
         </ButtonGroup>
 
-        <div style={{ display: "flex", alignItems: "center", flexGrow: 1, justifyContent: "flex-end" }}>
-          <Button variant="contained" color="primary" onClick={onViewVersionControl} sx={{ ml: 1 }}>
-            Version Control
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            flexGrow: 1,
+            justifyContent: "flex-end",
+          }}
+        >
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={handleClick}
+            sx={{ ml: 1 }}
+          >
+            {isToggled ? "Version Control" : "Verification"}
           </Button>
         </div>
       </Toolbar>
@@ -39,11 +48,12 @@ export function VerifyNavBar({onViewVersionControl}) {
   );
 }
 
-
-export function VersionNavBar({onToggle}) {
+export function VersionNavBar({ onToggle }) {
   const handleDeleteSelected = () => {
     // Filter out the selected rows
-    const updatedRows = rows.filter(row => !selectedRows.includes(row.version));
+    const updatedRows = rows.filter(
+      (row) => !selectedRows.includes(row.version)
+    );
     // Update the rows state
     setRows(updatedRows);
     // Clear the selected rows
@@ -59,7 +69,6 @@ export function VersionNavBar({onToggle}) {
       }}
     >
       <Toolbar>
-
         <div
           style={{
             display: "flex",
@@ -67,17 +76,7 @@ export function VersionNavBar({onToggle}) {
             flexGrow: 1,
             justifyContent: "flex-end",
           }}
-        >
-
-          <Button
-            variant="contained"
-            color="primary"
-            onClick={onToggle}
-            sx={{ ml: 1 }}
-          >
-            Verification
-          </Button>
-        </div>
+        ></div>
       </Toolbar>
     </AppBar>
   );
