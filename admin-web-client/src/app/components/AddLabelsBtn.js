@@ -1,4 +1,4 @@
-import { cache, sendLabels} from "../web-api/data.js";
+import { cache, fetchLabels, insertLabel} from "../web-api/api.js";
 import {
   Button,
   TextField,
@@ -80,17 +80,17 @@ export default function AddLabel() {
       }
   
       // * send new labels to the server *
-  
-      sendLabels(newLabels, (resJson) => {
+      insertLabel(newLabels).then(r => {
         //newLabels.forEach((value) => cache.labels.push(value));
         setNewLabels([]);
         setOpen(false);
         SetOpenConfirm(false);
-  
+        fetchLabels();
         //replace alert with notification
         //alert( cache.labels );
       });
   
+      /*
       reader.onload = (e) => {
         const imagePreview = document.getElementById("image-preview");
         imagePreview.src = e.target.result;
@@ -98,7 +98,7 @@ export default function AddLabel() {
   
         // Open the modal
         openModal();
-      };
+      };*/
     };
   
     return (

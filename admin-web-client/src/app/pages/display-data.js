@@ -1,7 +1,7 @@
 "use client";
 import * as React from "react";
 import { useState, useEffect } from "react";
-import { cache, sendVerified, fetchPending } from "../web-api/data";
+import { cache, verify, fetchUnverified, fetchLabels } from "../web-api/api";
 import {
   ImageList,
   ImageListItem,
@@ -14,7 +14,7 @@ import {
   DialogContent,
   DialogContentText,
 } from "@mui/material";
-import TagSelection from "../tag-button";
+import TagSelection from "../components/tag-button";
 import { Box, Container, Stack, Paper, styled } from "@mui/material";
 import InputLabel from "@mui/material/InputLabel";
 import MenuItem from "@mui/material/MenuItem";
@@ -35,9 +35,19 @@ export function FetchButton({ children, callback }) {
   };
 
   //fetch
-  const handleConfirm = async () => {
-    await fetchPending(callback);
-    setOpen(false);
+  const handleConfirm = () => {
+    fetchUnverified().then((r) => {
+      if (cache.labels.length == 0) {
+        fetchLabels().then(r => {
+          setOpen(false);
+          callback();
+        });
+      }
+      else {
+        setOpen(false);
+        callback();
+      }
+    });
   };
 
   const handleClose = () => setOpen(false);
@@ -79,8 +89,10 @@ export function SendVerifiedButton({ children, callback }) {
   };
 
   const handleConfirm = async () => {
-    await sendVerified(() => callback());
-    setOpen(false);
+    verify(cache.unverified).then(r => {
+      callback();
+      setOpen(false);
+    });
   };
 
   const handleClick = () => {

@@ -2,7 +2,7 @@
 import React, { useState } from "react";
 import { ThemeProvider, createTheme } from "@mui/material/styles";
 import ImageListData from "./pages/display-data";
-import VersionHistory from "./pages/version-control";
+import VersionHistory from "./pages/verison-control";
 import { VerifyNavBar } from "./components/NavBar";
 import "./stylePage.css";
 

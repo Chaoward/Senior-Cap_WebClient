@@ -287,10 +287,6 @@ export default function VersionHistory({ onBack }) {
         </Table>
       </TableContainer>
 
-      <Button variant="contained" color="primary" onClick={onBack}>
-        Back
-      </Button>
-
       {/* Dialog for displaying preview images */}
       <Dialog open={dialogOpen} onClose={handleCloseDialog}>
         <DialogTitle>Preview - Version {selectedRow?.version}</DialogTitle>

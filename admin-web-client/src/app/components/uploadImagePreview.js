@@ -12,7 +12,7 @@ import {
 import {
     AddAPhoto,
 } from "@mui/icons-material";
-import {cache, sendImages} from "../web-api/data";
+import {cache, uploadImages} from "../web-api/api";
 import { useState, useRef } from "react";
 
 
@@ -111,7 +111,7 @@ export default function UploadPreview() {
                 });
             }
         }
-        await sendImages(imgLabList);
+        await uploadImages(imgLabList);
         //clear gallery
         setImageGallery([]);
         setSelectedLabels([]);

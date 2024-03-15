@@ -1,6 +1,6 @@
 "use client";
 
-import { cache } from "./web-api/data";
+import { cache, fullURL } from "../web-api/api";
 import * as React from "react";
 import MenuItem from "@mui/material/MenuItem";
 import FormControl from "@mui/material/FormControl";
@@ -10,7 +10,7 @@ import Autocomplete from "@mui/material/Autocomplete";
 import TextField from '@mui/material/TextField';
 
 export default function TagSelection({ entry }) {
-  const [value, setValue] = React.useState(entry.Label);
+  const [value, setValue] = React.useState(entry.label);
 
   const handleChange = (e, val) => {
     e.preventDefault();
@@ -19,7 +19,7 @@ export default function TagSelection({ entry }) {
     const index = cache.unverified.indexOf(entry);
     console.log(val);
     //console.log(e.target.value);
-    cache.unverified[index].Label = val;
+    cache.unverified[index].label = val;
     setValue(val);
     console.log(cache.unverified);
   };
@@ -35,7 +35,7 @@ export default function TagSelection({ entry }) {
 
   return (
     <div>
-      <img width={250} height={250} src={entry.imageUrl} />
+      <img width={250} height={250} src={fullURL(entry.imgURL)} />
       <Grid>
         <label>Tag: </label>
 
@@ -46,13 +46,13 @@ export default function TagSelection({ entry }) {
             id="tag_selection"
             options={ cache.labels }
             sx={{ width: 300 }}
-            renderInput={(params) => <TextField {...params} label="Label" />}
+            renderInput={(params) => <TextField {...params} label="label" />}
           />
 
           
           {/* <Select
             name="new_tag"
-            defaultValue={entry.Label}
+            defaultValue={entry.label}
             onChange={handleInput}
           >
             <MenuItem value="dog">Dog</MenuItem>

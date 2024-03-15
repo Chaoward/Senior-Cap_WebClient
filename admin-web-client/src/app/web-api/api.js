@@ -26,15 +26,21 @@ const cache = {
     let json = await makeRequest("images/unverified", "GET");
 
     //save to memory/refresh cache
-    cache.unverified = json;
+    cache.unverified = json ? json : [];
 
     return Promise.resolve(json);
 }
 
 
+async function uploadImages(files) {
+    //TODO upload images here
+}
 
-  async function verify(imgList=cache.unverified) {
+
+async function verify(imgList=cache.unverified) {
     let json = await makeRequest("images/unverified/verify", "PUT", JSON.stringify(imgList));
+
+    cache.unverified = [];
 
     return Promise.resolve(json);
 }
@@ -45,12 +51,16 @@ const cache = {
 }
 
 
+function fullURL(filename) {
+    return _default + "images/" + filename;
+}
+
 
 ///// LABELS ///////////////////////////////////////////////////////
   async function fetchLabels() {
     let labelList = await makeRequest("labels", "GET");
 
-    cache.labels = labelList;
+    cache.labels = labelList ? labelList : [];
 
     return Promise.resolve(labelList);
 }
@@ -125,5 +135,8 @@ module.exports = {
     fetchVersions,
     setRelease,
     verify,
-    insertLabel
+    insertLabel,
+    fullURL,
+    uploadImages,
+    cache
 };
