@@ -34,7 +34,7 @@ export default function VersionHistory({ onBack }) {
       images: 4,
       labels: "3",
       size: "80MB",
-      newLabels: ["cow", "horse", "goat"],
+      //newLabels: ["cow", "horse", "goat"],
     },
     {
       version: "1.1.1",
@@ -42,19 +42,21 @@ export default function VersionHistory({ onBack }) {
       images: 2,
       labels: "6",
       size: "24MB",
-      newLabels: ["rabbit", "cat", "daisy", "fox", "ant", "bird"],
+      //newLabels: ["rabbit", "cat", "daisy", "fox", "ant", "bird"],
     },
   ]);
 
-  const [sortOrder, setSortOrder] = useState("newToOld");
   const [releaseVersion, setReleaseVersion] = useState(null);
   const [selectedRow, setSelectedRow] = useState(null);
   const [dialogOpen, setDialogOpen] = useState(false);
-  const versionNewLabels = selectedRow ? selectedRow.newLabels : [];
-  const [sortOrderVersion, setSortOrderVersion] = useState("newToOld");
-  const [sortOrderImages, setSortOrderImages] = useState("lowToHigh");
-  const [sortOrderLabels, setSortOrderLabels] = useState("lowToHigh");
-  const [sortOrderSize, setSortOrderSize] = useState("lowToHigh");
+  //const versionNewLabels = selectedRow ? selectedRow.newLabels : [];
+  const [sortOrder, setSortOrder] = useState({
+    version: "newToOld",
+    date: "newToOld",
+    images: "lowToHigh",
+    labels: "lowToHigh",
+    size: "lowToHigh",
+  });
 
   const handleCheckboxChange = (version) => {
     const newSelected = selectedRows.includes(version)
@@ -94,74 +96,24 @@ export default function VersionHistory({ onBack }) {
     setDialogOpen(false);
   };
 
-  const handleSortOrderChange = (event, column) => {
-    const selectedSortOrder = event.target.value;
-    setSortOrder(selectedSortOrder);
+  const handleSort = (column) => {
+    const newSortOrder = { ...sortOrder };
 
-    if (column === "version") {
-      setSortOrderVersion(selectedSortOrder);
-      if (selectedSortOrder === "newToOld") {
-        setRows(
-          [...rows].sort((a, b) => compareVersions(b.version, a.version))
-        );
-      } else if (selectedSortOrder === "oldToNew") {
-        setRows(
-          [...rows].sort((a, b) => compareVersions(a.version, b.version))
-        );
-      }
+    if (newSortOrder[column] === "newToOld") {
+      newSortOrder[column] = "oldToNew";
+      setRows([...rows].sort((a, b) => (a[column] > b[column] ? 1 : -1)));
+    } else if (newSortOrder[column] === "oldToNew") {
+      newSortOrder[column] = "newToOld";
+      setRows([...rows].sort((a, b) => (a[column] < b[column] ? 1 : -1)));
+    } else if (newSortOrder[column] === "lowToHigh") {
+      newSortOrder[column] = "highToLow";
+      setRows([...rows].sort((a, b) => a[column] - b[column]));
+    } else {
+      newSortOrder[column] = "lowToHigh";
+      setRows([...rows].sort((a, b) => b[column] - a[column]));
     }
 
-    if (column === "images") {
-      setSortOrderImages(selectedSortOrder);
-      if (selectedSortOrder === "lowToHigh") {
-        setRows([...rows].sort((a, b) => a.images - b.images));
-      } else if (selectedSortOrder === "highToLow") {
-        setRows([...rows].sort((a, b) => b.images - a.images));
-      }
-    }
-
-    if (column === "labels") {
-      setSortOrderLabels(selectedSortOrder);
-      if (selectedSortOrder === "lowToHigh") {
-        setRows(
-          [...rows].sort((a, b) => {
-            if (a.labels < b.labels) return -1;
-            if (a.labels > b.labels) return 1;
-            return 0;
-          })
-        );
-      } else if (selectedSortOrder === "highToLow") {
-        setRows(
-          [...rows].sort((a, b) => {
-            if (a.labels > b.labels) return -1;
-            if (a.labels < b.labels) return 1;
-            return 0;
-          })
-        );
-      }
-    }
-    if (column === "size") {
-      setSortOrderSize(selectedSortOrder);
-      if (selectedSortOrder === "lowToHigh") {
-        setRows([...rows].sort((a, b) => parseInt(a.size) - parseInt(b.size)));
-      } else if (selectedSortOrder === "highToLow") {
-        setRows([...rows].sort((a, b) => parseInt(b.size) - parseInt(a.size)));
-      }
-    }
-  };
-
-  // Function to compare two version strings
-  const compareVersions = (versionA, versionB) => {
-    const partsA = versionA.split(".").map(Number);
-    const partsB = versionB.split(".").map(Number);
-
-    for (let i = 0; i < Math.max(partsA.length, partsB.length); i++) {
-      if (partsA[i] === undefined) return -1;
-      if (partsB[i] === undefined) return 1;
-      if (partsA[i] > partsB[i]) return 1;
-      if (partsA[i] < partsB[i]) return -1;
-    }
-    return 0;
+    setSortOrder(newSortOrder);
   };
 
   return (
@@ -195,68 +147,44 @@ export default function VersionHistory({ onBack }) {
           <TableHead>
             <TableRow>
               <TableCell>
-                <FormControl variant="filled" sx={{ m: 1, minWidth: 120 }}>
-                  <InputLabel id="version-select-label">Version</InputLabel>
-                  <Select
-                    labelId="version-select-label"
-                    label="Version"
-                    value={sortOrderVersion}
-                    onChange={(event) =>
-                      handleSortOrderChange(event, "version")
-                    }
-                  >
-                    <MenuItem value="newToOld">New to Old</MenuItem>
-                    <MenuItem value="oldToNew">Old to New</MenuItem>
-                  </Select>
-                </FormControl>
-              </TableCell>
-
-              <TableCell>Date</TableCell>
-
-              <TableCell>
-                <FormControl variant="filled" sx={{ m: 1, minWidth: 120 }}>
-                  <InputLabel id="images-sort-label">Images</InputLabel>
-                  <Select
-                    labelId="images-sort-label"
-                    label="Images"
-                    value={sortOrderImages}
-                    onChange={(event) => handleSortOrderChange(event, "images")}
-                  >
-                    <MenuItem value="lowToHigh">Low to High</MenuItem>
-                    <MenuItem value="highToLow">High to Low</MenuItem>
-                  </Select>
-                </FormControl>
+                <Button
+                  variant="contained"
+                  onClick={() => handleSort("version")}
+                >
+                  Version
+                </Button>
               </TableCell>
 
               <TableCell>
-                <FormControl variant="filled" sx={{ m: 1, minWidth: 120 }}>
-                  <InputLabel id="labels-select-label">Labels</InputLabel>
-                  <Select
-                    labelId="labels-select-label"
-                    label="Labels"
-                    value={sortOrderLabels}
-                    onChange={(event) => handleSortOrderChange(event, "labels")}
-                  >
-                    <MenuItem value="lowToHigh">Low to High</MenuItem>
-                    <MenuItem value="highToLow">High to Low</MenuItem>
-                  </Select>
-                </FormControl>
+                <Button variant="contained" onClick={() => handleSort("date")}>
+                  Date
+                </Button>
               </TableCell>
 
               <TableCell>
-                <FormControl variant="filled" sx={{ m: 1, minWidth: 120 }}>
-                  <InputLabel id="size-sort-label">Size</InputLabel>
-                  <Select
-                    labelId="size-sort-label"
-                    label="Size"
-                    value={sortOrderSize}
-                    onChange={(event) => handleSortOrderChange(event, "size")}
-                  >
-                    <MenuItem value="lowToHigh">Low to High</MenuItem>
-                    <MenuItem value="highToLow">High to Low</MenuItem>
-                  </Select>
-                </FormControl>
+                <Button
+                  variant="contained"
+                  onClick={() => handleSort("images")}
+                >
+                  Image
+                </Button>
               </TableCell>
+
+              <TableCell>
+                <Button
+                  variant="contained"
+                  onClick={() => handleSort("labels")}
+                >
+                  Label
+                </Button>
+              </TableCell>
+
+              <TableCell>
+                <Button variant="contained" onClick={() => handleSort("size")}>
+                  Size
+                </Button>
+              </TableCell>
+
               <TableCell>Select</TableCell>
               <TableCell>Preview</TableCell>
             </TableRow>
@@ -287,7 +215,7 @@ export default function VersionHistory({ onBack }) {
         </Table>
       </TableContainer>
 
-      {/* Dialog for displaying preview images */}
+      {/* Dialog for displaying preview images
       <Dialog open={dialogOpen} onClose={handleCloseDialog}>
         <DialogTitle>Preview - Version {selectedRow?.version}</DialogTitle>
         <DialogContent>
@@ -313,7 +241,7 @@ export default function VersionHistory({ onBack }) {
             Close
           </Button>
         </DialogActions>
-      </Dialog>
+      </Dialog> */}
     </>
   );
 }
