@@ -1,9 +1,9 @@
 "use client";
 import React, { useState } from "react";
 import { AppBar, Button, Toolbar, ButtonGroup } from "@mui/material";
-
 import UploadPreview from "./uploadImagePreview.js";
 import AddLabel from "../components/AddLabelsBtn.js";
+import TrainModelBtn from "../components/TrainModelBtn.js"; // Import the TrainModelBtn component here
 
 export function VerifyNavBar({ onViewVersionControl, onToggle }) {
   const [isToggled, setIsToggled] = useState(false);
@@ -24,6 +24,7 @@ export function VerifyNavBar({ onViewVersionControl, onToggle }) {
         <ButtonGroup color="inherit" variant="text">
           <AddLabel />
           <UploadPreview />
+          <TrainModelBtn />
         </ButtonGroup>
 
         <div
@@ -49,17 +50,6 @@ export function VerifyNavBar({ onViewVersionControl, onToggle }) {
 }
 
 export function VersionNavBar({ onToggle }) {
-  const handleDeleteSelected = () => {
-    // Filter out the selected rows
-    const updatedRows = rows.filter(
-      (row) => !selectedRows.includes(row.version)
-    );
-    // Update the rows state
-    setRows(updatedRows);
-    // Clear the selected rows
-    setSelectedRows([]);
-  };
-
   return (
     <AppBar
       position="static"
