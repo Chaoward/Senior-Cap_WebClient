@@ -32,8 +32,23 @@ const cache = {
 }
 
 
+/**
+ * TODO : fix files not sending 
+ * @param {List<{file, String}>} files
+ */
 async function uploadImages(files) {
-    //TODO upload images here
+    //parse files to formData
+    const formData = new FormData();
+
+    for (const f of files) {
+        formData.append("files[]", f.image);
+        formData.append("labels[]", f.label);
+    }
+
+    //make request
+    let res = await makeRequest("images/unverified", "POST", formData);
+
+    return Promise.resolve(res);
 }
 
 

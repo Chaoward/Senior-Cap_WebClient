@@ -21,6 +21,7 @@ export default function UploadPreview() {
     const fileInputRef = useRef(null);
     const addFileInputRef = useRef(null);
     const [imagePreview, setImagePreview] = useState(null);
+    let files = [];
     const [openPreviewDialog, setOpenPreviewDialog] = useState(false);
     const [imageGallery, setImageGallery] = useState([]);
     const [selectedLabels, setSelectedLabels] = useState([]);
@@ -49,6 +50,7 @@ export default function UploadPreview() {
 
             for (let i = 0; i < selectedFiles.length; i++) {
                 const reader = new FileReader();
+                files.push(selectedFiles[i]);
 
                 reader.onload = (e) => {
                     galleryImages.push(e.target.result);
@@ -97,22 +99,30 @@ export default function UploadPreview() {
     const handleUpload = async () => {
         const imgLabList = [];
         //combine image and label
-        for (let i = 0; i < imageGallery.length; i++) {
+        for (let i = 0; i < files.length; i++) {
             try {
                 imgLabList.push({
-                    image: imageGallery[i],
+                    image: files[i],
                     label: selectedLabels[i]
                 });
             }
             catch (e) {
                 imgLabList.push({
-                    image: imageGallery[i],
+                    image: files[i],
                     label: ""
                 });
             }
         }
-        await uploadImages(imgLabList);
+        await uploadImages(imgLabList).then(res => {
+            if (!res.success) {
+                console.error(res.error);
+            }
+            else {
+                console.log(res.count);
+            }
+        });
         //clear gallery
+        files = [];
         setImageGallery([]);
         setSelectedLabels([]);
         setOpenPreviewDialog(false);
