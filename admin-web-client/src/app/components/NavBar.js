@@ -1,7 +1,7 @@
 "use client";
 import React, { useState } from "react";
 import { AppBar, Button, Toolbar, ButtonGroup } from "@mui/material";
-import UploadPreview from "./uploadImagePreview.js";
+import UploadPreview from "../components/uploadImage.js";
 import AddLabel from "../components/AddLabelsBtn.js";
 import TrainModelBtn from "../components/TrainModelBtn.js"; // Import the TrainModelBtn component here
 

@@ -33,20 +33,18 @@ const cache = {
 
 
 /**
- * TODO : fix files not sending 
- * @param {List<{file, String}>} files
+ * @param {List<{file, label: String}>} files
  */
 async function uploadImages(files) {
     //parse files to formData
-    const formData = new FormData();
+    let formData = new FormData();
 
-    for (const f of files) {
-        formData.append("files[]", f.image);
-        formData.append("labels[]", f.label);
+    for (let i = 0; i < files.length; i++) {
+        formData.append("file", files[i].file);
+        formData.append("label", files[i].label);
     }
 
-    //make request
-    let res = await makeRequest("images/unverified", "POST", formData);
+    let res = await makeRequest("images/unverified", "POST", formData, {'Access-Corntrol-Allow-Origin': 'http://localhost:3000'});
 
     return Promise.resolve(res);
 }
