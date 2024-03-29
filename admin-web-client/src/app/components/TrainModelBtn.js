@@ -1,17 +1,27 @@
-import React from "react";
-import { Button } from "@mui/material";
-import LightbulbIcon from "@mui/icons-material/Lightbulb";
+"use client";
+import React, {useState} from "react";
+import { Button, } from "@mui/material";
+import { trainModel } from "../web-api/api";
+import ModelTrainingIcon from '@mui/icons-material/ModelTraining';
+
 
 export default function TrainModelBtn() {
+  const [isDisable, setDisable] = useState(false);
+
+  const handleClick = () => {
+    setDisable(true);
+    trainModel().then(res => {
+      if (!res.success) {
+        console.error(res.error);
+      }
+
+      setDisable(false);
+    });
+  };
+
   return (
-    <Button
-      startIcon={<LightbulbIcon style={{ color: "#1d1128" }} />}
-      color="secondary"
-      sx={{
-        mr: "1",
-      }}
-    >
-      Train Model
+    <Button color="secondary" disable={isDisable} onClick={handleClick}>
+      <ModelTrainingIcon sx={{ mr: 1, color: "#1d1128" }} /> Train Model
     </Button>
   );
 }

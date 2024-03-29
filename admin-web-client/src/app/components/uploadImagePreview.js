@@ -107,6 +107,7 @@ export default function UploadPreview() {
                 });
             }
             catch (e) {
+                console.error(e);
                 imgLabList.push({
                     image: files[i],
                     label: ""
