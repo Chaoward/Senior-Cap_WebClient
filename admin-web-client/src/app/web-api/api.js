@@ -87,7 +87,7 @@ function fullURL(filename) {
 
 
 ///// MODELS ///////////////////////////////////////////////////////
-  async function fetchVersions() {
+async function fetchVersions() {
     let json = await makeRequest("models", "GET");
 
     //save to memory/refresh cache
@@ -96,13 +96,19 @@ function fullURL(filename) {
     return Promise.resolve(json);
 }
 
-  async function setRelease(versionID) {
+async function setRelease(versionID) {
     if (!versionID) throw "Must provide a ID of the version to be set as release.";
     let data = {verID: versionID};
 
     let resJson = await makeRequest("models/release", "PUT", JSON.stringify(data));
 
     return resJson.success ? Promise.resolve(resJson) : Promise.reject(resJson);
+}
+
+async function trainModel() {
+    let res = await makeRequest("images/train", "PUT");
+
+    return Promise.resolve(res);
 }
 
 
@@ -151,5 +157,6 @@ module.exports = {
     insertLabel,
     fullURL,
     uploadImages,
+    trainModel,
     cache
 };
