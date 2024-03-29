@@ -1,4 +1,3 @@
-"use-client";
 import React, { useState, useEffect } from "react";
 import {
   Typography,
@@ -142,6 +141,7 @@ export default function VersionHistory({ onBack }) {
           </Button>
         </ButtonGroup>
       </Toolbar>
+      
       <TableContainer>
         <Table>
           <TableHead>
@@ -150,13 +150,19 @@ export default function VersionHistory({ onBack }) {
                 <Button
                   variant="contained"
                   onClick={() => handleSort("version")}
+                  sx={{ width: "100%" }}
+                  endIcon={<KeyboardArrowDownIcon />}
                 >
                   Version
                 </Button>
               </TableCell>
 
               <TableCell>
-                <Button variant="contained" onClick={() => handleSort("date")}>
+                <Button variant="contained"
+                onClick={() => handleSort("date")}
+                sx={{ width: "100%" }}
+                endIcon={<KeyboardArrowDownIcon />}
+                >
                   Date
                 </Button>
               </TableCell>
@@ -165,6 +171,8 @@ export default function VersionHistory({ onBack }) {
                 <Button
                   variant="contained"
                   onClick={() => handleSort("images")}
+                  sx={{ width: "100%" }}
+                  endIcon={<KeyboardArrowDownIcon />}
                 >
                   Image
                 </Button>
@@ -174,13 +182,20 @@ export default function VersionHistory({ onBack }) {
                 <Button
                   variant="contained"
                   onClick={() => handleSort("labels")}
+                  sx={{ width: "100%" }}
+                  endIcon={<KeyboardArrowDownIcon />}
                 >
                   Label
                 </Button>
               </TableCell>
 
               <TableCell>
-                <Button variant="contained" onClick={() => handleSort("size")}>
+                <Button 
+                variant="contained"
+                onClick={() => handleSort("size")}
+                sx={{ width: "100%" }}
+                endIcon={<KeyboardArrowDownIcon />}
+                >
                   Size
                 </Button>
               </TableCell>
