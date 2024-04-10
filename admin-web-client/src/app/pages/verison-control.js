@@ -22,6 +22,18 @@ import {
   InputLabel,
 } from "@mui/material";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
+import KeyboardArrowUpIcon from "@mui/icons-material/KeyboardArrowUp";
+
+//===== Version Object type ===============
+/**
+ * version: String
+ * data: ISO Date format String
+ * images: int
+ * labels: int
+ * size: float (in MB)
+ * 
+*/
+//=========================================
 
 export default function VersionHistory({ onBack }) {
   const [selectedRows, setSelectedRows] = useState([]);
@@ -29,18 +41,18 @@ export default function VersionHistory({ onBack }) {
   const [rows, setRows] = useState([
     {
       version: "1.0.2",
-      date: "1-12-2024",
+      date: "2024-1-12",
       images: 4,
-      labels: "3",
-      size: "80MB",
+      labels: 3,
+      size: 80.2,
       //newLabels: ["cow", "horse", "goat"],
     },
     {
       version: "1.1.1",
-      date: "1-22-2024",
+      date: "2024-1-22",
       images: 2,
-      labels: "6",
-      size: "24MB",
+      labels: 6,
+      size: 24.1,
       //newLabels: ["rabbit", "cat", "daisy", "fox", "ant", "bird"],
     },
   ]);
@@ -56,6 +68,9 @@ export default function VersionHistory({ onBack }) {
     labels: "lowToHigh",
     size: "lowToHigh",
   });
+
+  const [sortedColumn, setSortedColumn] = useState("");   //which column to sort by
+  const [isAscending, setAscending] = useState(true);     //sort by ascending order?
 
   const handleCheckboxChange = (version) => {
     const newSelected = selectedRows.includes(version)
@@ -95,7 +110,56 @@ export default function VersionHistory({ onBack }) {
     setDialogOpen(false);
   };
 
+  /**
+   * 
+   * @param {String} column The key name of the column to sort by
+   */
   const handleSort = (column) => {
+    //check col to sort by, only change order and return if the same as current sorted column
+    if (column === sortedColumn) {
+      rows.reverse();
+      setAscending(!isAscending);
+      return;
+    }
+
+    //when column != sortedColumn, set sorting function
+    let compareFn = null;
+  
+    switch (column) {
+      case "version":
+        compareFn = (a, b) => {
+          if (a[column] > b[column])
+            return 1;
+          else if (a[column] < b[column])
+            return -1;
+          else
+            return 0;
+        };
+      break;
+
+      case "date":
+        compareFn = (a, b) => {
+          let firstDate = new Date(a[column]);
+          let secondDate = new Date(b[column]);
+          return firstDate.getTime() - secondDate.getTime();
+        };
+      break;
+
+      //default number type comparsion
+      default:
+        compareFn = (a, b) => {
+          return a[column] - b[column];
+        };
+    }
+    
+    //sort and save state
+    rows.sort(compareFn);
+    setRows( [...rows.reverse()] );
+    setSortedColumn(column);
+    setAscending(false);
+
+    // OLD
+    /*
     const newSortOrder = { ...sortOrder };
 
     if (newSortOrder[column] === "newToOld") {
@@ -113,6 +177,14 @@ export default function VersionHistory({ onBack }) {
     }
 
     setSortOrder(newSortOrder);
+    */
+  };
+
+
+  const displayArrow = (column) => {
+    if (sortedColumn !== column) return <></>;
+
+    return isAscending ? <KeyboardArrowUpIcon/> : <KeyboardArrowDownIcon/>;
   };
 
   return (
@@ -148,20 +220,19 @@ export default function VersionHistory({ onBack }) {
             <TableRow>
               <TableCell>
                 <Button
-                  variant="contained"
                   onClick={() => handleSort("version")}
                   sx={{ width: "100%" }}
-                  endIcon={<KeyboardArrowDownIcon />}
+                  endIcon={displayArrow("version")}
                 >
                   Version
                 </Button>
               </TableCell>
 
               <TableCell>
-                <Button variant="contained"
+                <Button 
                 onClick={() => handleSort("date")}
                 sx={{ width: "100%" }}
-                endIcon={<KeyboardArrowDownIcon />}
+                endIcon={displayArrow("date")}
                 >
                   Date
                 </Button>
@@ -169,10 +240,10 @@ export default function VersionHistory({ onBack }) {
 
               <TableCell>
                 <Button
-                  variant="contained"
+                  
                   onClick={() => handleSort("images")}
                   sx={{ width: "100%" }}
-                  endIcon={<KeyboardArrowDownIcon />}
+                  endIcon={displayArrow("images")}
                 >
                   Image
                 </Button>
@@ -180,10 +251,10 @@ export default function VersionHistory({ onBack }) {
 
               <TableCell>
                 <Button
-                  variant="contained"
+                  
                   onClick={() => handleSort("labels")}
                   sx={{ width: "100%" }}
-                  endIcon={<KeyboardArrowDownIcon />}
+                  endIcon={displayArrow("labels")}
                 >
                   Label
                 </Button>
@@ -191,10 +262,10 @@ export default function VersionHistory({ onBack }) {
 
               <TableCell>
                 <Button 
-                variant="contained"
+                
                 onClick={() => handleSort("size")}
                 sx={{ width: "100%" }}
-                endIcon={<KeyboardArrowDownIcon />}
+                endIcon={displayArrow("size")}
                 >
                   Size
                 </Button>
