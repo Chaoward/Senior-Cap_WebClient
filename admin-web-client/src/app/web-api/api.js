@@ -1,5 +1,3 @@
-//TODO: fetch calls for all apis endpoints
-
 var _default = "http://13.57.32.134:5000/";
 var debug = "http://127.0.0.1:5000/"; //"http://192.168.1.72:2000/"; //"http://127.0.0.1:2000/";
 _default = debug;
@@ -27,6 +25,11 @@ const cache = {
 
     //save to memory/refresh cache
     cache.unverified = json ? json : [];
+
+    //temp
+    for (let i = 0; i < cache.unverified.length; ++i) {
+        cache.unverified[i].label = cache.unverified[i].sysLabel;
+    }
 
     return Promise.resolve(json);
 }
@@ -88,7 +91,7 @@ function fullURL(filename) {
 
 ///// MODELS ///////////////////////////////////////////////////////
 async function fetchVersions() {
-    let json = await makeRequest("models", "GET");
+    let json = await makeRequest("models/info", "GET");
 
     //save to memory/refresh cache
     cache.versions = json;

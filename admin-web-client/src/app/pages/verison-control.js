@@ -23,36 +23,40 @@ import {
 } from "@mui/material";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import KeyboardArrowUpIcon from "@mui/icons-material/KeyboardArrowUp";
+import { fetchVersions } from "../web-api/api";
 
 //===== Version Object type ===============
 /**
  * version: String
- * data: ISO Date format String
+ * date: ISO Date format String
  * images: int
- * labels: int
- * size: float (in MB)
- * 
+ * labels: [{count: int, label: String}...]
+ * size: int (in bytes)
+ * release: bool
+ * id: int
 */
 //=========================================
 
 export default function VersionHistory({ onBack }) {
   const [selectedRows, setSelectedRows] = useState([]);
-  const [newLabels, setNewLabels] = useState([]);
+  //const [newLabels, setNewLabels] = useState([]);
+  const [previewVer, setVer] = useState({version: "", labels: []});
   const [rows, setRows] = useState([
+    /*
     {
-      version: "1.0.2",
+      version: "999.0.2",
       date: "2024-1-12",
       images: 4,
-      labels: 3,
-      size: 80.2,
+      labels: [],
+      size: 8098239,
       //newLabels: ["cow", "horse", "goat"],
-    },
+    },*/
     {
-      version: "1.1.1",
+      version: "999.1.1",
       date: "2024-1-22",
       images: 2,
-      labels: 6,
-      size: 24.1,
+      labels: [{count:1, label: "sample"}],
+      size: 24000,
       //newLabels: ["rabbit", "cat", "daisy", "fox", "ant", "bird"],
     },
   ]);
@@ -71,6 +75,12 @@ export default function VersionHistory({ onBack }) {
 
   const [sortedColumn, setSortedColumn] = useState("");   //which column to sort by
   const [isAscending, setAscending] = useState(true);     //sort by ascending order?
+
+  const handleFetch = () => {
+    fetchVersions().then(json => {
+      setRows(json);
+    });
+  };
 
   const handleCheckboxChange = (version) => {
     const newSelected = selectedRows.includes(version)
@@ -110,6 +120,13 @@ export default function VersionHistory({ onBack }) {
     setDialogOpen(false);
   };
 
+  const handleLabelDialog = (e, ver) => {
+    e.stopPropagation();
+    if (ver.labels.length < 1) return;
+    setVer(ver);
+    setDialogOpen(true);
+  };
+
   /**
    * 
    * @param {String} column The key name of the column to sort by
@@ -144,6 +161,12 @@ export default function VersionHistory({ onBack }) {
           return firstDate.getTime() - secondDate.getTime();
         };
       break;
+
+      case "labels":
+        compareFn = (a, b) => {
+          return a[column].length - b[column].length;
+        };
+        break;
 
       //default number type comparsion
       default:
@@ -187,6 +210,31 @@ export default function VersionHistory({ onBack }) {
     return isAscending ? <KeyboardArrowUpIcon/> : <KeyboardArrowDownIcon/>;
   };
 
+
+  const parseByteSize = (size) => {
+    if (size < 1024)
+      return `${size} bytes`;
+
+    let i = 1;
+    while (i <= 3) {
+      size /= 1024;
+      if (size < 1024)
+        break;
+      i += 1;
+    }
+
+    switch (i) {
+      case 1:
+        return `${Math.round(size * 10) / 10} KB`;
+
+      case 2:
+        return `${Math.round(size * 10) / 10} MB`;
+      
+      default:
+        return `${Math.round(size * 10) / 10} GB`;
+    }
+  };
+
   return (
     <>
       <Typography variant="h6">
@@ -197,6 +245,13 @@ export default function VersionHistory({ onBack }) {
         <FormControl></FormControl>
 
         <ButtonGroup>
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={handleFetch}
+          >
+            Fetch Model Info
+          </Button>
           <Button
             variant="contained"
             color="secondary"
@@ -277,13 +332,13 @@ export default function VersionHistory({ onBack }) {
           </TableHead>
 
           <TableBody>
-            {rows.map((row) => (
-              <TableRow key={row.version}>
+            {rows.map((row, index) => (
+              <TableRow key={index}>
                 <TableCell>{row.version}</TableCell>
-                <TableCell>{row.date}</TableCell>
+                <TableCell>{row.date.split("T")[0]}</TableCell>
                 <TableCell>{row.images}</TableCell>
-                <TableCell>{row.labels}</TableCell>
-                <TableCell>{row.size}</TableCell>
+                <TableCell>{row.labels.length}</TableCell>
+                <TableCell>{parseByteSize(row.size)}</TableCell>
                 <TableCell>
                   <Checkbox
                     onChange={() => handleCheckboxChange(row.version)}
@@ -291,7 +346,7 @@ export default function VersionHistory({ onBack }) {
                   />
                 </TableCell>
                 <TableCell>
-                  <Button onClick={(e) => handleDialogOpen(e, row)}>
+                  <Button onClick={(e) => handleLabelDialog(e, row)}>
                     <KeyboardArrowDownIcon />
                   </Button>
                 </TableCell>
@@ -300,6 +355,28 @@ export default function VersionHistory({ onBack }) {
           </TableBody>
         </Table>
       </TableContainer>
+
+
+      {/* Label Preview Dialog */}
+      <Dialog open={dialogOpen} onClose={handleCloseDialog}>
+      <DialogTitle>Version - {previewVer.version} Labels </DialogTitle>
+        <DialogContent>
+          <div style={{ display: "flex", flexDirection: "column" }}>
+              <div style={{ marginBottom: "10px" }}>
+                <div style={{ display: "flex", flexWrap: "wrap" }}>
+                  {previewVer.labels.map((ele, index) => (
+                    <Chip
+                      key={index}
+                      label={`${ele.label} : ${ele.count}`}
+                      variant="outlined"
+                      style={{ marginRight: "10px", marginBottom: "10px" }}
+                    />
+                  ))}
+                </div>
+              </div>
+            </div>
+        </DialogContent>
+      </Dialog>
 
       {/* Dialog for displaying preview images
       <Dialog open={dialogOpen} onClose={handleCloseDialog}>
