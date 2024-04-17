@@ -24,6 +24,9 @@ import {
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import KeyboardArrowUpIcon from "@mui/icons-material/KeyboardArrowUp";
 import { fetchVersions, setRelease, cache } from "../web-api/api";
+import ConfirmationDialog from "../components/ConfirmationDialog";
+
+
 
 //===== Version Object type ===============
 /**
@@ -44,8 +47,8 @@ export default function VersionHistory({ onBack }) {
   const [rows, setRows] = useState(cache.versions);
 
   const [releaseVersion, setReleaseVersion] = useState(cache.release ? cache.release.version : null);
-  const [selectedRow, setSelectedRow] = useState(null);
-  const [dialogOpen, setDialogOpen] = useState(false);
+  //const [selectedRow, setSelectedRow] = useState(null);
+  const [dialogToOpen, setDialog] = useState("");
   //const versionNewLabels = selectedRow ? selectedRow.newLabels : [];
 
   const [sortedColumn, setSortedColumn] = useState("");   //which column to sort by
@@ -88,21 +91,17 @@ export default function VersionHistory({ onBack }) {
     }
   };
 
-  const handleDialogOpen = (event, row) => {
-    event.stopPropagation();
-    setSelectedRow(row);
-    setDialogOpen(true);
-  };
 
   const handleCloseDialog = () => {
-    setDialogOpen(false);
+    setDialog("");
   };
+  
 
   const handleLabelDialog = (e, ver) => {
     e.stopPropagation();
     if (ver.labels.length < 1) return;
     setVer(ver);
-    setDialogOpen(true);
+    setDialog("label");
   };
 
   /**
@@ -212,14 +211,14 @@ export default function VersionHistory({ onBack }) {
           <Button
             variant="contained"
             color="secondary"
-            onClick={handleDeleteSelected}
+            onClick={() => setDialog("delete")}
           >
             Delete Selected
           </Button>
           <Button
             variant="contained"
             color="primary"
-            onClick={handleSetRelease}
+            onClick={() => setDialog("release")}
           >
             Set Release
           </Button>
@@ -292,7 +291,7 @@ export default function VersionHistory({ onBack }) {
             {rows.map((row, index) => (
               <TableRow key={index}>
                 <TableCell>{row.version}</TableCell>
-                <TableCell>{row.date.split("T")[0]}</TableCell>
+                <TableCell>{new Date(row.date).toLocaleDateString('en-US')}</TableCell>
                 <TableCell>{row.images}</TableCell>
                 <TableCell>{row.labels.length}</TableCell>
                 <TableCell>{parseByteSize(row.size)}</TableCell>
@@ -315,7 +314,7 @@ export default function VersionHistory({ onBack }) {
 
 
       {/* Label Preview Dialog */}
-      <Dialog open={dialogOpen} onClose={handleCloseDialog}>
+      <Dialog open={dialogToOpen === "label"} onClose={handleCloseDialog}>
       <DialogTitle>Version - {previewVer.version} Labels </DialogTitle>
         <DialogContent>
           <div style={{ display: "flex", flexDirection: "column" }}>
@@ -335,8 +334,36 @@ export default function VersionHistory({ onBack }) {
         </DialogContent>
       </Dialog>
 
+      {/*===== Confirmation Dialogs ====================================*/}
+
+      {/*Setting Release*/}
+      <ConfirmationDialog
+        id="release-prompt"
+        open={dialogToOpen === "release" && selectedRows.length > 0}
+        title={`Set the Release Version to ${selectedRows.length > 0 && dialogToOpen === "release" ? cache.versions.filter(x => x.id === selectedRows[0])[0].version : ""}`}
+        content="This will set the release version to the first selected version, mark that model to be the lastest updated or most stable version to be downloaded by the mobile-client."
+        onConfirm={() => {
+          handleSetRelease();
+          setDialog("");
+        }}
+        onCancel={() => setDialog("")}
+      />
+
+      {/*Deleting a Version*/}
+      <ConfirmationDialog
+        id="delete-prompt"
+        open={dialogToOpen === "delete" && selectedRows.length > 0}
+        title={"Remove All Selected Versions!"}
+        content="This will remove the following versions from the database and archives the model files for latter deletion or recovery"
+        onConfirm={() => {
+          handleDeleteSelected();
+          setDialog("");
+        }}
+        onCancel={() => setDialog("")}
+      />
+
       {/* Dialog for displaying preview images
-      <Dialog open={dialogOpen} onClose={handleCloseDialog}>
+      <Dialog open={dialogToOpen} onClose={handleCloseDialog}>
         <DialogTitle>Preview - Version {selectedRow?.version}</DialogTitle>
         <DialogContent>
           <div style={{ display: "flex", flexDirection: "column" }}>
