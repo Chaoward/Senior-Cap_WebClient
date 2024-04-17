@@ -20,7 +20,7 @@ export default function TrainModelBtn() {
   };
 
   return (
-    <Button color="secondary" disable={isDisable} onClick={handleClick}>
+    <Button color="secondary" disabled={isDisable} onClick={handleClick}>
       <ModelTrainingIcon sx={{ mr: 1, color: "#1d1128" }} /> Train Model
     </Button>
   );

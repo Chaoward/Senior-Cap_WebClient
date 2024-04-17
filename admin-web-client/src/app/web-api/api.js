@@ -10,7 +10,25 @@ const DEFAULT_HEADER = {
 const cache = {
     labels: [],
     unverified: [],
-    versions: [],
+    versions: [
+        /*
+        {
+          version: "999.0.2",
+          date: "2024-1-12",
+          images: 4,
+          labels: [],
+          size: 8098239,
+          //newLabels: ["cow", "horse", "goat"],
+        },*/
+        {
+          version: "999.1.1",
+          date: "2024-1-22",
+          images: 2,
+          labels: [{count:1, label: "sample"}],
+          size: 24000,
+          //newLabels: ["rabbit", "cat", "daisy", "fox", "ant", "bird"],
+        },
+      ],
     release: {}
 };
 
@@ -95,17 +113,35 @@ async function fetchVersions() {
 
     //save to memory/refresh cache
     cache.versions = json;
+    for (const ver of cache.versions) {
+        if (ver.release) {
+            cache.release = {
+                version: ver.version,
+                id: ver.id
+            };
+            break;
+        }
+    }
 
     return Promise.resolve(json);
 }
 
 async function setRelease(versionID) {
-    if (!versionID) throw "Must provide a ID of the version to be set as release.";
+    if (!versionID) throw "Must provide an ID of the version to be set as release.";
     let data = {verID: versionID};
 
     let resJson = await makeRequest("models/release", "PUT", JSON.stringify(data));
 
-    return resJson.success ? Promise.resolve(resJson) : Promise.reject(resJson);
+    if (resJson.success) {
+        const newVer = cache.versions.filter((ver) => ver.id == versionID)[0];
+        cache.release = {
+            version: newVer.version,
+            id: newVer.id
+        };
+        return Promise.resolve(resJson);
+    }
+    else 
+        Promise.reject(resJson);
 }
 
 async function trainModel() {

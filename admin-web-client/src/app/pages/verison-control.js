@@ -23,7 +23,7 @@ import {
 } from "@mui/material";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import KeyboardArrowUpIcon from "@mui/icons-material/KeyboardArrowUp";
-import { fetchVersions } from "../web-api/api";
+import { fetchVersions, setRelease, cache } from "../web-api/api";
 
 //===== Version Object type ===============
 /**
@@ -41,37 +41,12 @@ export default function VersionHistory({ onBack }) {
   const [selectedRows, setSelectedRows] = useState([]);
   //const [newLabels, setNewLabels] = useState([]);
   const [previewVer, setVer] = useState({version: "", labels: []});
-  const [rows, setRows] = useState([
-    /*
-    {
-      version: "999.0.2",
-      date: "2024-1-12",
-      images: 4,
-      labels: [],
-      size: 8098239,
-      //newLabels: ["cow", "horse", "goat"],
-    },*/
-    {
-      version: "999.1.1",
-      date: "2024-1-22",
-      images: 2,
-      labels: [{count:1, label: "sample"}],
-      size: 24000,
-      //newLabels: ["rabbit", "cat", "daisy", "fox", "ant", "bird"],
-    },
-  ]);
+  const [rows, setRows] = useState(cache.versions);
 
-  const [releaseVersion, setReleaseVersion] = useState(null);
+  const [releaseVersion, setReleaseVersion] = useState(cache.release ? cache.release.version : null);
   const [selectedRow, setSelectedRow] = useState(null);
   const [dialogOpen, setDialogOpen] = useState(false);
   //const versionNewLabels = selectedRow ? selectedRow.newLabels : [];
-  const [sortOrder, setSortOrder] = useState({
-    version: "newToOld",
-    date: "newToOld",
-    images: "lowToHigh",
-    labels: "lowToHigh",
-    size: "lowToHigh",
-  });
 
   const [sortedColumn, setSortedColumn] = useState("");   //which column to sort by
   const [isAscending, setAscending] = useState(true);     //sort by ascending order?
@@ -79,20 +54,21 @@ export default function VersionHistory({ onBack }) {
   const handleFetch = () => {
     fetchVersions().then(json => {
       setRows(json);
+      setReleaseVersion(cache.release.version);
     });
   };
 
-  const handleCheckboxChange = (version) => {
-    const newSelected = selectedRows.includes(version)
-      ? selectedRows.filter((v) => v !== version)
-      : [...selectedRows, version];
+  const handleCheckboxChange = (id) => {
+    const newSelected = selectedRows.includes(id)
+      ? selectedRows.filter((x) => x !== id)
+      : [...selectedRows, id];
     setSelectedRows(newSelected);
   };
 
   const handleDeleteSelected = () => {
     // Filter out the selected rows
     const updatedRows = rows.filter(
-      (row) => !selectedRows.includes(row.version)
+      (row) => !selectedRows.includes(row.id)
     );
     // Update the rows state
     setRows(updatedRows);
@@ -101,12 +77,14 @@ export default function VersionHistory({ onBack }) {
   };
 
   const handleSetRelease = () => {
-    if (selectedRows.length === 1) {
-      const selectedRow = rows.find((row) => row.version === selectedRows[0]);
-      if (selectedRow) {
-        // Set the release version label
-        setReleaseVersion(selectedRow.version);
-      }
+    if (selectedRows.length >= 1) {
+      const newId = selectedRows[0];
+      if (newId == null || newId == cache.release.id)
+        return;
+      
+      setRelease(newId).then(res => {
+        setReleaseVersion(cache.release.version);
+      });
     }
   };
 
@@ -180,27 +158,6 @@ export default function VersionHistory({ onBack }) {
     setRows( [...rows.reverse()] );
     setSortedColumn(column);
     setAscending(false);
-
-    // OLD
-    /*
-    const newSortOrder = { ...sortOrder };
-
-    if (newSortOrder[column] === "newToOld") {
-      newSortOrder[column] = "oldToNew";
-      setRows([...rows].sort((a, b) => (a[column] > b[column] ? 1 : -1)));
-    } else if (newSortOrder[column] === "oldToNew") {
-      newSortOrder[column] = "newToOld";
-      setRows([...rows].sort((a, b) => (a[column] < b[column] ? 1 : -1)));
-    } else if (newSortOrder[column] === "lowToHigh") {
-      newSortOrder[column] = "highToLow";
-      setRows([...rows].sort((a, b) => a[column] - b[column]));
-    } else {
-      newSortOrder[column] = "lowToHigh";
-      setRows([...rows].sort((a, b) => b[column] - a[column]));
-    }
-
-    setSortOrder(newSortOrder);
-    */
   };
 
 
@@ -341,8 +298,8 @@ export default function VersionHistory({ onBack }) {
                 <TableCell>{parseByteSize(row.size)}</TableCell>
                 <TableCell>
                   <Checkbox
-                    onChange={() => handleCheckboxChange(row.version)}
-                    checked={selectedRows.indexOf(row.version) !== -1}
+                    onChange={() => handleCheckboxChange(row.id)}
+                    checked={selectedRows.indexOf(row.id) !== -1}
                   />
                 </TableCell>
                 <TableCell>
