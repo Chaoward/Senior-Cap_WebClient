@@ -1,3 +1,5 @@
+//TODO: fetch calls for all apis endpoints
+
 var _default = "http://13.57.32.134:5000/";
 var debug = "http://127.0.0.1:5000/"; //"http://192.168.1.72:2000/"; //"http://127.0.0.1:2000/";
 _default = debug;
@@ -10,25 +12,7 @@ const DEFAULT_HEADER = {
 const cache = {
     labels: [],
     unverified: [],
-    versions: [
-        /*
-        {
-          version: "999.0.2",
-          date: "2024-1-12",
-          images: 4,
-          labels: [],
-          size: 8098239,
-          //newLabels: ["cow", "horse", "goat"],
-        },*/
-        {
-          version: "999.1.1",
-          date: "2024-1-22",
-          images: 2,
-          labels: [{count:1, label: "sample"}],
-          size: 24000,
-          //newLabels: ["rabbit", "cat", "daisy", "fox", "ant", "bird"],
-        },
-      ],
+    versions: [],
     release: {}
 };
 
@@ -43,11 +27,6 @@ const cache = {
 
     //save to memory/refresh cache
     cache.unverified = json ? json : [];
-
-    //temp
-    for (let i = 0; i < cache.unverified.length; ++i) {
-        cache.unverified[i].label = cache.unverified[i].sysLabel;
-    }
 
     return Promise.resolve(json);
 }
@@ -105,56 +84,40 @@ function fullURL(filename) {
     return resJson.success ? Promise.resolve(resJson) : Promise.reject(resJson);
 }
 
+async function fetchUserLabels() {
+    try {
+        const response = await makeRequest("userLables", "GET");
+        if (!response.ok) {
+            throw new Error("Failed to fetch user labels");
+        }
+        const userLabels = await response.json();
+        return userLabels;
+    } catch (error) {
+        console.error("Error fetching user labels:", error);
+        throw error; // Rethrow the error for the caller to handle
+    }
+}
+
+
 
 
 ///// MODELS ///////////////////////////////////////////////////////
 async function fetchVersions() {
-    let json = await makeRequest("models/info", "GET");
+    let json = await makeRequest("models", "GET");
 
     //save to memory/refresh cache
     cache.versions = json;
-    for (const ver of cache.versions) {
-        if (ver.release) {
-            cache.release = {
-                version: ver.version,
-                id: ver.id
-            };
-            break;
-        }
-    }
 
     return Promise.resolve(json);
 }
 
-
-async function removeVersion(idList) {
-    let res = await makeRequest("models/", "DELETE", JSON.stringify({id: idList}));
-    if (!res.success) {
-        console.error(res.error);
-        return Promise.reject(res);
-    }
-
-    await fetchVersions();
-    
-    return Promise.resolve(res);
-}
-
 async function setRelease(versionID) {
-    if (!versionID) throw "Must provide an ID of the version to be set as release.";
+    if (!versionID) throw "Must provide a ID of the version to be set as release.";
     let data = {verID: versionID};
 
     let resJson = await makeRequest("models/release", "PUT", JSON.stringify(data));
 
-    if (resJson.success) {
-        const newVer = cache.versions.filter((ver) => ver.id == versionID)[0];
-        cache.release = {
-            version: newVer.version,
-            id: newVer.id
-        };
-        return Promise.resolve(resJson);
-    }
-    else 
-        Promise.reject(resJson);
+    return resJson.success ? Promise.resolve(resJson) : Promise.reject(resJson);
 }
 
 async function trainModel() {
@@ -201,6 +164,7 @@ async function makeRequest(endpoint, _method, _body="", header=DEFAULT_HEADER) {
 
 module.exports = {
     fetchLabels,
+    fetchUserLabels,
     fetchUnverified,
     fetchVerfied,
     fetchVersions,
@@ -210,6 +174,5 @@ module.exports = {
     fullURL,
     uploadImages,
     trainModel,
-    removeVersion,
     cache
 };
