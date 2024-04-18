@@ -1,59 +1,39 @@
 import { useState, useEffect } from "react";
-import { fullURL, cache } from "../web-api/api";
-import * as React from "react";
 import Autocomplete from "@mui/material/Autocomplete";
 import TextField from "@mui/material/TextField";
+import { fullURL, cache } from "../web-api/api";
 
 export default function TagSelection({ entry }) {
-  const [value, setValue] = React.useState(entry.label);
+  const [value, setValue] = useState(entry.label);
   const [options, setOptions] = useState([]);
   const [inputValue, setInputValue] = useState("");
 
   useEffect(() => {
-    // Generate dummy data
-    /*
-    const dummyLabels = [
-      { label: "Dog", value: "dog" },
-      { label: "Cat", value: "cat" },
-      { label: "Bird", value: "bird" },
-      { label: "Fish", value: "fish" },
-      { label: "Rabbit", value: "rabbit" },
-      { label: "Horse", value: "horse" },
-      { label: "Turtle", value: "turtle" },
-      { label: "Snake", value: "snake" },
-      { label: "Hamster", value: "hamster" },
-      { label: "Cow", value: "cow" },
-      { label: "Raccoon", value: "raccoon" },
-      { label: "Guinea Pig", value: "guinea_pig" },
-    ];*/
-
-    // Set the options in the state
-    setOptions(cache.labels);
+    setOptions(cache.labels.map((label) => ({
+      label: label.sysLabel,
+      value: label,
+    })));
   }, []);
-
 
   const handleChange = (e, val) => {
     e.preventDefault();
-    if (val === value) return;
-
-    const index = cache.unverified.indexOf(entry);
-    console.log(val);
-    //console.log(e.target.value);
-    cache.unverified[index].label = val;
+    const index = cache.unverified.findIndex((item) => item === entry);
+    if (index !== -1) {
+      cache.unverified[index].label = val.label; 
+    }
     setValue(val);
-    console.log(cache.unverified);
   };
 
   const customFilterOptions = (options, { inputValue }) => {
-    // Custom filtering logic based on inputValue
-    const filteredOptions = options.filter((option) =>
-      option.toLowerCase().includes(inputValue.toLowerCase())
+    const filteredOptions = options.filter(
+      (option) =>
+        option.label &&
+        option.label.toLowerCase().includes(inputValue.toLowerCase())
     );
 
-    // Custom sorting logic
     filteredOptions.sort((a, b) => {
-      const aIndex = a.toLowerCase().indexOf(inputValue.toLowerCase());
-      const bIndex = b.toLowerCase().indexOf(inputValue.toLowerCase());
+      const aIndex = a.label.toLowerCase().indexOf(inputValue.toLowerCase());
+      const bIndex = b.label.toLowerCase().indexOf(inputValue.toLowerCase());
       return aIndex - bIndex;
     });
 
@@ -62,19 +42,21 @@ export default function TagSelection({ entry }) {
 
   return (
     <div>
-      <img width={250} height={250} src={fullURL(entry.imgURL)} />
-      <Autocomplete
-        value={value}
-        inputValue={inputValue}
-        onInputChange={(e, val) => setInputValue(val)}
-        onChange={handleChange}
-        id="tag_selection"
-        options={inputValue.length > 0 ? options : []} // Show options only if inputValue has length > 0
-        loading={!options.length}
-        sx={{ width: 300 }}
-        renderInput={(params) => <TextField {...params} label="label" />}
-        filterOptions={customFilterOptions}
-      />
+      <img width={250} height={250} src={fullURL(entry.imgURL)} alt={entry.label} />
+      {options && (
+        <Autocomplete
+          value={value}
+          inputValue={inputValue}
+          onInputChange={(e, val) => setInputValue(val)}
+          onChange={handleChange}
+          id="tag_selection"
+          options={options}
+          loading={!options.length}
+          sx={{ width: 300 }}
+          renderInput={(params) => <TextField {...params} label="Label" />}
+          filterOptions={customFilterOptions}
+        />
+      )}
     </div>
   );
 }
