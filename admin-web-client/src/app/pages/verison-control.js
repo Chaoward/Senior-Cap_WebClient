@@ -23,7 +23,7 @@ import {
 } from "@mui/material";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import KeyboardArrowUpIcon from "@mui/icons-material/KeyboardArrowUp";
-import { fetchVersions, setRelease, cache } from "../web-api/api";
+import { fetchVersions, setRelease, removeVersion, cache } from "../web-api/api";
 import ConfirmationDialog from "../components/ConfirmationDialog";
 
 
@@ -69,14 +69,17 @@ export default function VersionHistory({ onBack }) {
   };
 
   const handleDeleteSelected = () => {
-    // Filter out the selected rows
-    const updatedRows = rows.filter(
-      (row) => !selectedRows.includes(row.id)
-    );
-    // Update the rows state
-    setRows(updatedRows);
-    // Clear the selected rows
-    setSelectedRows([]);
+    //delete request
+    removeVersion(selectedRows).then(res => {
+      // Filter out the selected rows
+      const updatedRows = rows.filter(
+        (row) => !selectedRows.includes(row.id)
+      );
+      // Update the rows state
+      setRows(updatedRows);
+      // Clear the selected rows
+      setSelectedRows([]);
+    });
   };
 
   const handleSetRelease = () => {

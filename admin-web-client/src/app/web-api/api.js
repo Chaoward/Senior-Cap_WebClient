@@ -126,6 +126,19 @@ async function fetchVersions() {
     return Promise.resolve(json);
 }
 
+
+async function removeVersion(idList) {
+    let res = await makeRequest("models/", "DELETE", JSON.stringify({id: idList}));
+    if (!res.success) {
+        console.error(res.error);
+        return Promise.reject(res);
+    }
+
+    await fetchVersions();
+    
+    return Promise.resolve(res);
+}
+
 async function setRelease(versionID) {
     if (!versionID) throw "Must provide an ID of the version to be set as release.";
     let data = {verID: versionID};
@@ -197,5 +210,6 @@ module.exports = {
     fullURL,
     uploadImages,
     trainModel,
+    removeVersion,
     cache
 };
