@@ -20,30 +20,27 @@ import InputLabel from "@mui/material/InputLabel";
 import MenuItem from "@mui/material/MenuItem";
 import FormControl from "@mui/material/FormControl";
 import Select from "@mui/material/Select";
-import IconButton from '@mui/material/IconButton';
-import WestIcon from '@mui/icons-material/West';
-import EastIcon from '@mui/icons-material/East';
+import IconButton from "@mui/material/IconButton";
+import WestIcon from "@mui/icons-material/West";
+import EastIcon from "@mui/icons-material/East";
 
 //===== FetchButton =======================================
 export function FetchButton({ children, callback }) {
   const [open, setOpen] = useState(false);
 
   const handleClick = () => {
-    //if data on cache.unverified, prompt user wether to refetch
     if (cache.unverified.length > 0) setOpen(true);
     else handleConfirm();
   };
 
-  //fetch
   const handleConfirm = () => {
     fetchUnverified().then((r) => {
-      if (cache.labels.length == 0) {
-        fetchLabels().then(r => {
+      if (cache.labels.length === 0) {
+        fetchLabels().then((r) => {
           setOpen(false);
           callback();
         });
-      }
-      else {
+      } else {
         setOpen(false);
         callback();
       }
@@ -54,7 +51,9 @@ export function FetchButton({ children, callback }) {
 
   return (
     <div>
-      <Button color="info" onClick={handleClick}>{children}</Button>
+      <Button color="info" onClick={handleClick}>
+        {children}
+      </Button>
 
       <Dialog
         id="fetch-prompt"
@@ -66,13 +65,17 @@ export function FetchButton({ children, callback }) {
         <DialogContent>
           <DialogContentText>
             {
-              "Already fetched a batch of unverified data, fetching again will REMOVE any changes to the curent batch.\n\nDo want to proceed?"
+              "Already fetched a batch of unverified data, fetching again will REMOVE any changes to the current batch.\n\nDo you want to proceed?"
             }
           </DialogContentText>
         </DialogContent>
         <DialogActions>
-          <Button color="success" onClick={handleConfirm}>Confirm</Button>
-          <Button color="error" onClick={handleClose}>Cancel</Button>
+          <Button color="success" onClick={handleConfirm}>
+            Confirm
+          </Button>
+          <Button color="error" onClick={handleClose}>
+            Cancel
+          </Button>
         </DialogActions>
       </Dialog>
     </div>
@@ -84,12 +87,10 @@ export function FetchButton({ children, callback }) {
 export function SendVerifiedButton({ children, callback }) {
   const [open, setOpen] = useState(false);
 
-  const handleClose = () => {
-    setOpen(false);
-  };
+  const handleClose = () => setOpen(false);
 
   const handleConfirm = async () => {
-    verify(cache.unverified).then(r => {
+    verify(cache.unverified).then((r) => {
       callback();
       setOpen(false);
     });
@@ -114,14 +115,16 @@ export function SendVerifiedButton({ children, callback }) {
         <DialogTitle>{"Send Verified Images?"}</DialogTitle>
         <DialogContent>
           <DialogContentText>
-            {
-              "Confirm that all images are verified and ready for model training?"
-            }
+            {"Confirm that all images are verified and ready for model training?"}
           </DialogContentText>
         </DialogContent>
         <DialogActions>
-          <Button color="success" onClick={handleConfirm}>Confirm</Button>
-          <Button color="error" onClick={handleClose}>Cancel</Button>
+          <Button color="success" onClick={handleConfirm}>
+            Confirm
+          </Button>
+          <Button color="error" onClick={handleClose}>
+            Cancel
+          </Button>
         </DialogActions>
       </Dialog>
     </div>
@@ -131,9 +134,6 @@ export function SendVerifiedButton({ children, callback }) {
 
 //===== ImageListData =======================================================
 export default function ImageListData() {
-  // const [startIndex, setStartIndex] = useState(0);
-  // const [imageListData, setImageListData] = useState(cache.unverified);
-  // const [imagesPerPage, setImagesPerPage] = useState(2);
   const [startIndex, setStartIndex] = useState(0);
   const [imageListData, setImageListData] = useState(cache.unverified);
   const [imagesPerPage, setImagesPerPage] = useState(2);
@@ -141,9 +141,7 @@ export default function ImageListData() {
   const verifiedCount = Math.max(0, startIndex - imagesPerPage);
   const pendingCount = Math.max(0, imageListData.length - startIndex);
 
-  //callback after fetching
   const _retrieve = () => {
-    //after fetch, set start index and display first set of images
     setStartIndex(0);
     const firstImages = cache.unverified.slice(startIndex, imagesPerPage);
     setImageListData(firstImages);
@@ -154,13 +152,12 @@ export default function ImageListData() {
     const endIndex = Math.min(
       newStartIndex + imagesPerPage,
       cache.unverified.length
-    ); // Calculate endIndex based on newStartIndex or total available images
+    );
     const temp = cache.unverified.slice(newStartIndex, endIndex);
     setImageListData(temp);
-    setStartIndex(newStartIndex); // Update startIndex
+    setStartIndex(newStartIndex);
   };
 
-  //This one starts with second index but traverse once
   const _next = () => {
     const newStartIndex = Math.min(
       startIndex + imagesPerPage,
@@ -170,8 +167,8 @@ export default function ImageListData() {
       const endIndex = Math.min(
         newStartIndex + imagesPerPage,
         cache.unverified.length
-      ); // Calculate endIndex based on newStartIndex
-      setStartIndex(newStartIndex); // Update startIndex first
+      );
+      setStartIndex(newStartIndex);
       const temp = cache.unverified.slice(newStartIndex, endIndex);
       setImageListData(temp);
     }
@@ -204,25 +201,20 @@ export default function ImageListData() {
             sx={{ m: 1, minWidth: 180, color: "#514F59" }}
             size="small"
           >
-            <InputLabel sx={{color: "#514F59"}} id="demo-select-small-label">
-              images per page
+            <InputLabel sx={{ color: "#514F59" }} id="demo-select-small-label">
+              Images per page
             </InputLabel>
             <Select
-              sx={{color: "#514F59"}}
+              sx={{ color: "#514F59" }}
               value={imagesPerPage}
-              label="images per page "
+              label="Images per page"
               onChange={handleImagesPerPageChange}
             >
-              <MenuItem value={1}>1</MenuItem>
-              <MenuItem value={2}>2</MenuItem>
-              <MenuItem value={3}>3</MenuItem>
-              <MenuItem value={4}>4</MenuItem>
-              <MenuItem value={5}>5</MenuItem>
-              <MenuItem value={6}>6</MenuItem>
-              <MenuItem value={7}>8</MenuItem>
-              <MenuItem value={8}>8</MenuItem>
-              <MenuItem value={9}>9</MenuItem>
-              <MenuItem value={10}>10</MenuItem>
+              {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((value) => (
+                <MenuItem key={value} value={value}>
+                  {value}
+                </MenuItem>
+              ))}
             </Select>
           </FormControl>
 
@@ -230,18 +222,15 @@ export default function ImageListData() {
             <ButtonGroup variant="contained" disableElevation>
               <FetchButton callback={_retrieve}>Fetch Data</FetchButton>
 
-              <IconButton
-                onClick={_previous}
-                disabled={startIndex === 0}
-              >
-                <WestIcon sx={{ color: "#000000" }}/>
+              <IconButton onClick={_previous} disabled={startIndex === 0}>
+                <WestIcon sx={{ color: "#000000" }} />
               </IconButton>
 
               <IconButton
                 onClick={_next}
                 disabled={startIndex + imagesPerPage >= cache.unverified.length}
               >
-                <EastIcon sx={{ color: "#000000" }}/>
+                <EastIcon sx={{ color: "#000000" }} />
               </IconButton>
 
               <SendVerifiedButton
@@ -253,23 +242,27 @@ export default function ImageListData() {
           </FormControl>
 
           <Item>
-            Pending: {pendingCount} | Verified:{" "}
-            {verifiedCount < 0 ? 0 : verifiedCount}
+            Pending: {pendingCount} | Verified: {verifiedCount < 0 ? 0 : verifiedCount}
           </Item>
         </Stack>
 
-        {/* <Item sx={{ margin: 5 }} > */}
-          <ImageList>
-            {imageListData.map((entry) => (
-              <ImageListItem key={entry.id}>
-                <ImageListItemBar
-                  title={<TagSelection entry={entry} />}
-                  position="below"
-                />
-              </ImageListItem>
-            ))}
-          </ImageList>
-        {/* </Item> */}
+        <ImageList>
+          {imageListData.map((entry) => (
+            <ImageListItem key={entry.id}>
+              <ImageListItemBar
+                title={
+                  <TagSelection
+                    entry={entry}
+                    labels={cache.labels}
+                    userLabel={entry.userLabel}
+                    sysLabel={entry.sysLabel}
+                  />
+                }
+                position="below"
+              />
+            </ImageListItem>
+          ))}
+        </ImageList>
       </Box>
     </Container>
   );
