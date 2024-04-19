@@ -23,6 +23,7 @@ import Select from "@mui/material/Select";
 import IconButton from "@mui/material/IconButton";
 import WestIcon from "@mui/icons-material/West";
 import EastIcon from "@mui/icons-material/East";
+import { alignProperty } from "@mui/material/styles/cssUtils";
 
 //===== FetchButton =======================================
 export function FetchButton({ children, callback }) {
@@ -245,6 +246,7 @@ export default function ImageListData() {
             Pending: {pendingCount} | Verified: {verifiedCount < 0 ? 0 : verifiedCount}
           </Item>
         </Stack>
+        
 
         <ImageList>
           {imageListData.map((entry) => (
@@ -253,9 +255,6 @@ export default function ImageListData() {
                 title={
                   <TagSelection
                     entry={entry}
-                    labels={cache.labels}
-                    userLabel={entry.userLabel}
-                    sysLabel={entry.sysLabel}
                   />
                 }
                 position="below"

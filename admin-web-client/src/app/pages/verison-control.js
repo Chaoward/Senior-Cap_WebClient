@@ -229,7 +229,7 @@ export default function VersionHistory({ onBack }) {
       </Toolbar>
       
       <TableContainer>
-        <Table>
+        <Table sx={{ minWidth: 650 }}>
           <TableHead>
             <TableRow>
               <TableCell>

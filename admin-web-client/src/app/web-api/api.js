@@ -22,7 +22,7 @@ const cache = {
  * @returns {Promise<Array<Object>>} Promise of the list of unverifed
  *                                   imageURLs with their labels.
  */
-  async function fetchUnverified() {
+async function fetchUnverified() {
     let json = await makeRequest("images/unverified", "GET");
 
     //save to memory/refresh cache
@@ -33,7 +33,7 @@ const cache = {
 
 
 /**
- * @param {List<{file, label: String}>} files
+ * @param {List<{file, sysLabel: String, userLabel: String}>} files
  */
 async function uploadImages(files) {
     //parse files to formData
@@ -41,7 +41,8 @@ async function uploadImages(files) {
 
     for (let i = 0; i < files.length; i++) {
         formData.append("file", files[i].file);
-        formData.append("label", files[i].label);
+        formData.append("label", files[i].sysLabel);
+        formData.append("userLabel", files[i].userLabel);
     }
 
     let res = await makeRequest("images/unverified", "POST", formData, {'Access-Corntrol-Allow-Origin': 'http://localhost:3000'});
@@ -59,7 +60,7 @@ async function verify(imgList=cache.unverified) {
 }
 
 
-  async function fetchVerfied() {
+async function fetchVerfied() {
     return Promise.resolve( await makeRequest("images/verified", "GET") );
 }
 
@@ -70,7 +71,7 @@ function fullURL(filename) {
 
 
 ///// LABELS ///////////////////////////////////////////////////////
-  async function fetchLabels() {
+async function fetchLabels() {
     let labelList = await makeRequest("labels", "GET");
 
     cache.labels = labelList ? labelList : [];
@@ -78,12 +79,13 @@ function fullURL(filename) {
     return Promise.resolve(labelList);
 }
 
-  async function insertLabel(newLabels) {
+async function insertLabel(newLabels) {
     let resJson = await makeRequest("labels", "POST", JSON.stringify(newLabels));
 
     return resJson.success ? Promise.resolve(resJson) : Promise.reject(resJson);
 }
 
+/*
 async function fetchUserLabels() {
     try {
         const response = await makeRequest("userLables", "GET");
@@ -97,18 +99,41 @@ async function fetchUserLabels() {
         throw error; // Rethrow the error for the caller to handle
     }
 }
+*/
 
 
 
 
 ///// MODELS ///////////////////////////////////////////////////////
 async function fetchVersions() {
-    let json = await makeRequest("models", "GET");
+    let json = await makeRequest("models/info", "GET");
 
     //save to memory/refresh cache
     cache.versions = json;
+    for (const ver of cache.versions) {
+        if (ver.release) {
+            cache.release = {
+                version: ver.version,
+                id: ver.id
+            };
+            break;
+        }
+    }
 
     return Promise.resolve(json);
+}
+
+
+async function removeVersion(idList) {
+    let res = await makeRequest("models/", "DELETE", JSON.stringify({id: idList}));
+    if (!res.success) {
+        console.error(res.error);
+        return Promise.reject(res);
+    }
+
+    await fetchVersions();
+    
+    return Promise.resolve(res);
 }
 
 async function setRelease(versionID) {
@@ -164,7 +189,6 @@ async function makeRequest(endpoint, _method, _body="", header=DEFAULT_HEADER) {
 
 module.exports = {
     fetchLabels,
-    fetchUserLabels,
     fetchUnverified,
     fetchVerfied,
     fetchVersions,
@@ -174,5 +198,6 @@ module.exports = {
     fullURL,
     uploadImages,
     trainModel,
+    removeVersion,
     cache
 };

@@ -22,7 +22,6 @@ export function VerifyNavBar({ onViewVersionControl, onToggle }) {
     >
       <Toolbar>
         <ButtonGroup color="inherit" variant="text">
-          <AddLabel />
           <UploadPreview />
           <TrainModelBtn />
         </ButtonGroup>
