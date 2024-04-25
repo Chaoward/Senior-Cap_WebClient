@@ -1,8 +1,8 @@
 //TODO: fetch calls for all apis endpoints
 
-var _default = "http://13.57.32.134:5000/";
+var _default = "http://52.53.235.182/";
 var debug = "http://127.0.0.1:5000/"; //"http://192.168.1.72:2000/"; //"http://127.0.0.1:2000/";
-_default = debug;
+//_default = debug;
 
 const DEFAULT_HEADER = {
     'Access-Corntrol-Allow-Origin': 'http://localhost:3000',
