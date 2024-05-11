@@ -21,8 +21,8 @@ Unverified images are manually verified and can update their labels with new one
 
 ## Features
 - **Relabeling Images**
- - *System Labels*: labels from MobileNet
- - *User Labels*: text labels by the user
+  - *System Labels*: labels from MobileNet
+  - *User Labels*: text labels by the user
 - **Verifying Images from Server**
 - **Display and Sort ML Model Versions**
 - **Set Release and Delete Model Versions**
@@ -52,7 +52,9 @@ npm audit fix
 Once all dependencies are installed, you can start up the web client.
 ```sh
 npm start
+```
 or
+```sh
 npm run dev
 ```
 
