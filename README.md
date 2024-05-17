@@ -9,7 +9,7 @@ The Web application for Machine Learning in Network Denied Enviornments(MlNDE) S
 - [Sponser](#sponser)
 
 ## Overview
-This web client will server two main functions for the MlNDE system, handles verification of newly submitted images to the server, and control models versions on the server.
+This web client will serve two main functions for the MlNDE system, one handles verification of newly submitted images to the server, and two control models versions on the server.
 The client is meant to be a graphic user interface for the server and is able to start the fine tuning process on verified images.
 Unverified images are manually verified and can update their labels with new ones from the server or by the user.
 
