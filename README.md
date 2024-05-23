@@ -7,7 +7,7 @@ For more about the project visit [here](https://ascent.cysun.org/project/project
 
 ### MlNDE Systems
 - [Mobile Client](https://github.com/kevinmaravillas/MobileClient/tree/Main)
-- [Web Client](https://github.com/Chaoward/Senior-Cap_WebClient)
+- [Server](https://github.com/Chaoward/MlNDE_Server)
 
 
 # About the Web Client
